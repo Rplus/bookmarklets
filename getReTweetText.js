@@ -4,7 +4,7 @@ javascript:(() => {
     return (document.querySelector(query) || {content: ''}).content;
   };
   let author = getContent('meta[name="author"]');
-  let date = getContent('meta[name="date"]') || getContent('meta[property="article:published_time"]');
+  let date = getContent('meta[name="date"]') || getContent('meta[property="article:published_time"]').split('T')[0];
   let url = getContent('meta[property="twitter:url"]');
   if (!url) {
     url = document.querySelector('link[rel="canonical"]');
