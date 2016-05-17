@@ -1,8 +1,12 @@
 javascript:(() => {
   var m3u = {};
+  m3u.timeUnit = [1, 60, 60 * 60]; /* s, m, h */
   m3u.header = '#EXTM3U\n# Playlist created by SMPlayer 16.1.0\n\n';
-  m3u.list = [].map.call(document.querySelectorAll('.pl-video.yt-uix-tile:not([data-title="[已刪除的影片]"]):not([data-title="[私人影片]"]) .pl-video-title-link'), (a) => {
-    return `#EXTINF:0,${a.textContent.trim()}\n${a.href}`;
+  m3u.list = [].map.call(document.querySelectorAll('.pl-video.yt-uix-tile:not([data-title="[已刪除的影片]"]):not([data-title="[私人影片]"])'), (item) => {
+    let a = item.querySelector('.pl-video-title-link');
+    let time = item.querySelector('.pl-video-time').textContent.trim();
+    let allTime = time.split(':').reverse().map((num, idx) => num * m3u.timeUnit[idx]).reduce((prev, cur) => prev + cur);
+    return `#EXTINF:${allTime},${a.textContent.trim()}\n${a.href}`;
   }).join('\n\n');
 
   /* create a link with download url */
