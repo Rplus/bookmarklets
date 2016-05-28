@@ -20,16 +20,27 @@ javascript: (function () {
     document.body.appendChild(dialog);
   }
 
-  fetch(window.location.href.replace(/(\/pen\/|\/full\/)/gi, '/details/'))
+  fetch(window.location.href.replace(/(\/pen\/|\/full\/)/gi, '/drawer/'))
   .then((response) => response.text())
   .then((text) => {
     var doc = document.implementation.createHTMLDocument();
     doc.body.innerHTML = text;
-    var stat = [].map.call(doc.querySelectorAll('#pen-stat-numbers li'), (li) => {
-      return li.innerText.trim().replace(/\s+/g, ' ');
-    }).join('<br>');
 
-    dialog.innerHTML = stat;
+    let stats = doc.querySelector('.stats');
+
+    stats.innerHTML += `
+    <style>
+    #stat-dialog a {
+      display: block;
+      text-align: right;
+      color: initial;
+    }
+    #stat-dialog svg {
+      width: 1em;
+    }
+    </style>`;
+
+    dialog.innerHTML = stats.outerHTML;
     dialog.showModal();
   });
 })();
