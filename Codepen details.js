@@ -7,13 +7,6 @@ javascript: (function () {
   if (!dialog) {
     dialog = document.createElement('dialog');
     dialog.id = dialogId;
-    dialog.style.position = 'fixed';
-    dialog.style.top = '5em';
-    dialog.style.left = '25em';
-    dialog.style.right = 'auto';
-    dialog.style.zIndex = '1000';
-    dialog.style.width = 'auto';
-    dialog.style.padding = '10px';
     dialog.onclick = () => {
       dialog.close();
     };
@@ -30,6 +23,18 @@ javascript: (function () {
 
     stats.innerHTML += `
     <style>
+    #stat-dialog {
+      position: fixed;
+      top: 5em;
+      left: 25em;
+      right: auto;
+      z-index: 1000;
+      width: auto;
+      padding: 10px;
+    }
+    #stat-dialog .stats {
+      position: static;
+    }
     #stat-dialog a {
       display: block;
       text-align: right;
