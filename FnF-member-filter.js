@@ -2,7 +2,7 @@ javascript: (function () {
   /* via: http://stackoverflow.com/a/36247412/5940513 */
   var leftPad = (s, c, n) => c.repeat(n - s.length) + s;
 
-  var now = new Date();
+  var now = new Date(prompt('Day?', new Date().toJSON()));
   var thisYear = now.getFullYear();
   var thisMonth = leftPad(String(now.getMonth() + 1), '0', 2);
   var nextMonth = leftPad(String(now.getMonth() + 2), '0', 2);
