@@ -53,6 +53,7 @@ javascript: (function () {
 
       html = `<div style="display: flex; flex-wrap: wrap; text-align: center;">${html.join('')}</div>`;
 
+      console.log(`data:text/html;charset=utf-8,<meta charset="utf-8">${html}`);
       window.open(`data:text/html;charset=utf-8,<meta charset="utf-8">${html}`);
     });
 })();
