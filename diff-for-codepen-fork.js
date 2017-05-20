@@ -41,7 +41,7 @@ Promise.all(originFetch).then((originFiles) => {
           let isDiff = (string !== originFiles[fileTypeIndex]);
           let fileType = files.types[fileTypeIndex];
           forkLink.diff[fileType] = isDiff ? 'diff' : 'same';
-          forkLink.style.setProperty(`--c-${fileType}`, isDiff ? '#000' : '#fff');
+          forkLink.style.setProperty(`--c-${fileType}`, isDiff ? '#f00' : '#fff');
         });
       })
   });
@@ -58,13 +58,15 @@ if (!checkForkStyle) {
     position: absolute;
     left: .5em;
     top: 0;
-    width: .5em;
-    height: 30%;
-    opacity: .5;
+    width: 1em;
+    height: 1em;
+    border-radius: 50%;
+    opacity: .3;
     box-shadow:
-      -.5em 0 var(--c-html, #666),
-      -.5em 1em var(--c-css, #666),
-      -.5em 2em var(--c-js, #666);
+      -1em 0 var(--c-html, #666),
+      -1em 1.1em var(--c-css, #666),
+      -1em 2.2em var(--c-js, #666);
+    font-size: .5em;
   }`;
   document.body.appendChild(checkForkStyle);
 }
