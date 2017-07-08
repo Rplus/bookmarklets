@@ -1,15 +1,15 @@
 javascript:(() => {
-var getPenUrl = (url) => {
+let getPenUrl = (url) => {
   return url.replace('#forks', '').replace('/details/', '/pen/');
 };
-var linkOfForks = [].slice.call(document.querySelectorAll('#forks a'));
+let linkOfForks = [].slice.call(document.querySelectorAll('#forks a'));
 
-var urls = {
+let urls = {
   origin: getPenUrl(`https://codepen.io${location.pathname.replace(/\/$/, '')}`),
   forks: []
 };
 
-var files = {
+let files = {
   types: ['html', 'css', 'js'],
   origin: {
     html: '',
@@ -19,7 +19,7 @@ var files = {
   forks: null
 };
 
-var originFetch = files.types
+let originFetch = files.types
   .map((type) => `${urls.origin}.${type}`)
   .map((fileUrl) => {
     return new Promise((resolve, reject) => {
@@ -47,7 +47,7 @@ Promise.all(originFetch).then((originFiles) => {
   });
 });
 
-var checkForkStyle = document.getElementById('checkForkStyle');
+let checkForkStyle = document.getElementById('checkForkStyle');
 
 if (!checkForkStyle) {
   checkForkStyle = document.createElement('style');
