@@ -23,27 +23,28 @@ let originFetch = files.types
   .map((type) => `${urls.origin}.${type}`)
   .map((fileUrl) => {
     return new Promise((resolve, reject) => {
-      fetch(fileUrl).then((res) => res.text()).then(resolve).catch(reject);
+      fetch(fileUrl)
+      .then((res) => res.text())
+      .then(resolve).catch(reject);
     });
   });
 
-Promise.all(originFetch).then((originFiles) => {
-  let [html, css, js] = originFiles;
-  files.origin = { html, css, js };
-
+Promise.all(originFetch)
+.then((originFiles) => {
   linkOfForks.forEach((forkLink) => {
-    let link = getPenUrl(forkLink.href);
     forkLink.diff = {};
-    files.types
-      .map((type) => `${link}.${type}`)
-      .forEach((fileUrl, fileTypeIndex) => {
-        fetch(fileUrl).then((res) => res.text()).then((string) => {
-          let isDiff = (string !== originFiles[fileTypeIndex]);
-          let fileType = files.types[fileTypeIndex];
-          forkLink.diff[fileType] = isDiff ? 'diff' : 'same';
-          forkLink.style.setProperty(`--c-${fileType}`, isDiff ? '#f00' : '#fff');
-        });
-      })
+    let link = getPenUrl(forkLink.href);
+    let fileUrls = files.types.map((type) => `${link}.${type}`);
+    fileUrls.forEach((url, fileTypeIndex) => {
+      fetch(url)
+      .then((res) => res.text())
+      .then((string) => {
+        let isDiff = (string !== originFiles[fileTypeIndex]);
+        let fileType = files.types[fileTypeIndex];
+        forkLink.diff[fileType] = isDiff ? 'diff' : 'same';
+        forkLink.style.setProperty(`--c-${fileType}`, isDiff ? '#f00' : '#fff');
+      });
+    });
   });
 });
 
