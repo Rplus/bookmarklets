@@ -23,13 +23,13 @@
   });
 
   function delayInit() {
-    if (!window.videojs) {
-      delayInit();
-    } else {
-      setTimeout(() => {
+    setTimeout(() => {
+      if (!window.videojs) {
+        delayInit();
+      } else {
         init();
-      }, 1000);
-    }
+      }
+    }, 1000);
   }
 
   function init() {
