@@ -11,7 +11,7 @@ javascript:(() => {
 
   /* create a link with download url */
   var a = document.createElement('a');
-  a.style = 'display: none';
+  a.style.display = "none";
   var aFileParts = [m3u.header + m3u.list];
   var oMyBlob = new Blob(aFileParts, {type: 'text/plain'});
   var url = window.URL.createObjectURL(oMyBlob);
