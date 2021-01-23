@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         巴哈姆特動畫瘋影片擷圖小工具
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.4
 // @description  try to take over the world!
 // @author       Rplus
 // @match        https://ani.gamer.com.tw/animeVideo.php?sn=*
@@ -49,7 +49,7 @@
       const btn = document.createElement('div');
       btn.className = 'vjs-button vjs-control vjs-playback-rate';
       btn.innerHTML = `<div class="vjs-playback-rate-value">擷圖</div>`
-      btn.addEventListener('click', screenshot);
+      btn.addEventListener('click', () => screenshot(video, title));
       bar.appendChild(btn);
     }
 
