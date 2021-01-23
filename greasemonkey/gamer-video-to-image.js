@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         gamer video to img
+// @name         巴哈姆特動畫瘋影片擷圖小工具
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      1.2
 // @description  try to take over the world!
 // @author       Rplus
 // @match        https://ani.gamer.com.tw/animeVideo.php?sn=*
@@ -66,11 +66,11 @@
 
       console.log('ss');
       sKeyTime = 0;
-      screenshot();
+      screenshot(video, title);
     }
   }
 
-  function screenshot() {
+  function screenshot(video, title) {
     const currentTimeStr = new Date(video.currentTime * 1000).toISOString().slice(11, 19).replace(/\:/g, '-');
     const fn = title + '_' + currentTimeStr + '.jpg'
     saveImage(getImgDataUrl(video), fn);
@@ -88,7 +88,7 @@
     canvas.height = videoEl.videoHeight * scale;
     canvas.getContext('2d').drawImage(videoEl, 0, 0, canvas.width, canvas.height);
 
-    return canvas.toDataURL();
+    return canvas.toDataURL('image/jpeg', 1.0);
   }
 
   function saveImage(imgSrc, filename) {
