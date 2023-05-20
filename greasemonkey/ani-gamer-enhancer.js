@@ -1,13 +1,15 @@
 // ==UserScript==
-// @name         巴哈姆特動畫瘋小幫手：封面圖 & 自動開始 & 留言連結
+// @name         巴哈姆特動畫瘋小幫手：封面圖 & 自動開始 & 留言連結 & 彈幕熱圖
 // @namespace    http://tampermonkey.net/
-// @version      1.0
-// @description  幫巴哈姆特動畫瘋加上封面 & 自動播放 & 留言區的直連連結
+// @version      1.2
+// @description  幫巴哈姆特動畫瘋加上封面 & 自動播放 & 留言區的直連連結 & 彈幕熱圖
 // @author       Rplus
 // @match        https://ani.gamer.com.tw/animeVideo.php?sn=*
+// @license      WTFPL
 // ==/UserScript==
 
 (function() {
+
 	window.addEventListener('load', init);
 
 	function init() {
@@ -24,6 +26,9 @@
 			timeTag.textContent += ` (${getRelatedDays(time)}天前)`;
 		}
 
+		// latest duration
+		// animefun.breakPoint.breakPoint
+
 		// auto start when it is not comment permalink
 		if (location.search.indexOf('pcid') === -1) {
 			checkReady();
@@ -36,6 +41,9 @@
 			childList: true,
 			subtree: true,
 		});
+
+		// danmuHelper
+		danmuHelper();
 	}
 
 	function getRelatedDays(time = new Date()) {
@@ -79,5 +87,91 @@
 		// 	console.log('checkCmtBoxBeMore mutation');
 		// 	console.log(222, 'checkCmtBoxsBeMore', mutation.target.querySelectorAll('.c-reply__item').length);
 		// });
+	}
+
+	function danmuHelper() {
+		jQuery.ajax({
+			url: '/ajax/danmuGet.php',
+			data: {
+				sn: animefun.videoSn
+			},
+			method: 'POST',
+			dataType: 'json',
+		})
+		.then(data => {
+			let danmu = {};
+			danmu.length = data.length;
+			danmu.duration = data[danmu.length - 1].time;
+			danmu.byTime = data;
+			// danmu.byUser = data.reduce((all, i) => {
+			// 	let uid = i.userid;
+			// 	if (!all[uid]) { all[uid] = []; }
+			// 	all[uid].push(i);
+			// 	return all;
+			// }, {});
+
+			danmuAnal(danmu);
+		})
+	}
+
+	function danmuAnal(danmu) {
+		document.querySelector('#ani-tab-content-2 .ani-setting-item').insertAdjacentHTML('afterend', `
+			<div class="ani-setting-item ani-flex">
+				<div class="ani-setting-label">彈幕熱圖</div>
+				<div class="ani-set-flex-right">
+					<div class="ani-checkbox">
+						<label class="ani-checkbox__label">
+							<input type="checkbox" id="danmu-heatmap-ckbox" />
+							<div class="ani-checkbox__button"></div>
+						</label>
+					</div>
+				</div>
+			</div>
+		`);
+
+		document.querySelector('#danmu-heatmap-ckbox').addEventListener('change', (e) => {
+			document.querySelector('.danmu-heatmap').hidden = !e.target.checked;
+		});
+
+		// heatmap
+		let dots = '<div class="danmu-heatmap" hidden>' + danmu.byTime.map(i => {
+			return `<i data-time="${i.time / 10}" style="--l: ${i.time / danmu.duration}" title="${i.text}"></i>`;
+		}).join('') + '</div>';
+		let dots_style = `<style>
+			.danmu-heatmap {
+				position: absolute;
+				left: 0;
+				right: 0;
+				top: 100%;
+				z-index: 1;
+				height: 1em;
+				overflow: hidden;
+				background-color: #000;
+			}
+			.danmu-heatmap i {
+				position: absolute;
+				left: calc(var(--l, 1) * 100%);
+				width: 0.5em;
+				height: 1em;
+				background: #fff;
+				opacity: var(--dh-op, .1);
+			}
+			.danmu-heatmap i:hover {
+				opacity: .8;
+				background: #ff0;
+			}
+		</style>`;
+		let videoframe = document.querySelector('.videoframe');
+		videoframe.style.position = 'relative';
+		videoframe.insertAdjacentHTML('beforeend', dots + dots_style);
+
+		videoframe.querySelector('.danmu-heatmap').addEventListener('click', (e) => {
+			if (e.target.tagName !== 'I') { return; }
+			jumpVideoTime(+e.target.dataset?.time);
+		})
+	}
+
+	function jumpVideoTime(time = 0) {
+		document.getElementById('ani_video_html5_api').currentTime = time;
 	}
 })();
