@@ -1,49 +1,92 @@
 // ==UserScript==
 // @name         巴哈姆特動畫瘋小幫手：封面圖 & 自動開始 & 留言連結 & 彈幕熱圖
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  幫巴哈姆特動畫瘋加上封面 & 自動播放 & 留言區的直連連結 & 彈幕熱圖
 // @author       Rplus
 // @match        https://ani.gamer.com.tw/animeVideo.php?sn=*
 // @license      WTFPL
+// @grant        GM_registerMenuCommand
+// @grant        GM.setValue
+// @grant        GM.getValue
 // ==/UserScript==
 
-(function() {
+(async function() {
+	let options = await GM.getValue('options');
+	if (!options) {
+		options = {
+			cover: true,
+			autostart: true,
+			permalink: true,
+			heatmap: true,
+		};
+		GM.setValue('options', options);
+	};
+
+	let optionsText = {
+		cover: '封面圖',
+		autostart: '自動開始',
+		permalink: '留言連結',
+		heatmap: '彈幕熱圖',
+	};
+
+	function updateConfig(type) {
+		return () => {
+			options[type] = !options[type];
+			GM.setValue('options', options);
+		};
+	}
+
+	GM_registerMenuCommand(getMenuText('cover'), updateConfig('cover'), 'C');
+	GM_registerMenuCommand(getMenuText('autostart'), updateConfig('autostart'), 'A');
+	GM_registerMenuCommand(getMenuText('permalink'), updateConfig('permalink'), 'P');
+	GM_registerMenuCommand(getMenuText('heatmap'), updateConfig('heatmap'), 'H');
+
+	function getMenuText(type) {
+		return `${options[type] ? '✅ 已啟用' : '❎ 已停用'}：${optionsText[type]}`;
+	}
 
 	window.addEventListener('load', init);
 
 	function init() {
-		// insert poster
-		document.querySelector('h1')?.insertAdjacentHTML('afterbegin', `
-			<a href="${unsafeWindow.animefun.poster}">
-				<img src="${unsafeWindow.animefun.poster}" style="float: left; height: 2em; margin-top: 4px; margin-right: 8px;" />
-			</a>`);
+		if (options.cover) {
+			// insert poster
+			document.querySelector('h1')?.insertAdjacentHTML('afterbegin', `
+				<a href="${unsafeWindow.animefun.poster}">
+					<img src="${unsafeWindow.animefun.poster}" style="float: left; height: 2em; margin-top: 4px; margin-right: 8px;" />
+				</a>`);
 
-		// insert published time
-		let timeTag = document.querySelector('.anime_info_detail p');
-		let time = timeTag?.textContent.split('：')?.[1];
-		if (time) {
-			timeTag.textContent += ` (${getRelatedDays(time)}天前)`;
+			// insert published time
+			let timeTag = document.querySelector('.anime_info_detail p');
+			let time = timeTag?.textContent.split('：')?.[1];
+			if (time) {
+				timeTag.textContent += ` (${getRelatedDays(time)}天前)`;
+			}
 		}
 
 		// latest duration
 		// animefun.breakPoint.breakPoint
 
-		// auto start when it is not comment permalink
-		if (location.search.indexOf('pcid') === -1) {
-			checkReady();
+		if (options.autostart) {
+			// auto start when it is not comment permalink
+			if (location.search.indexOf('pcid') === -1) {
+				checkReady();
+			}
 		}
 
 		// observer comments to add permalink
-		// let cmtList;
-		let ob = new MutationObserver(checkCmtBoxBeMore);
-		ob.observe(document.getElementById('w-post-box'), {
-			childList: true,
-			subtree: true,
-		});
+		if (options.permalink) {
+			let ob = new MutationObserver(checkCmtBoxBeMore);
+			ob.observe(document.getElementById('w-post-box'), {
+				childList: true,
+				subtree: true,
+			});
+		}
 
-		// danmuHelper
-		danmuHelper();
+		// danmu heatmap
+		if (options.heatmap) {
+			danmuHelper();
+		}
 	}
 
 	function getRelatedDays(time = new Date()) {
