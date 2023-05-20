@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         巴哈姆特動畫瘋小幫手：封面圖 & 自動開始 & 留言連結 & 彈幕熱圖
 // @namespace    http://tampermonkey.net/
-// @version      1.3.1
+// @version      1.3.2
 // @description  幫巴哈姆特動畫瘋加上封面 & 自動播放 & 留言區的直連連結 & 彈幕熱圖
 // @author       Rplus
 // @match        https://ani.gamer.com.tw/animeVideo.php?sn=*
@@ -30,17 +30,15 @@
 		heatmap: '彈幕熱圖',
 	};
 
-	function updateConfig(type) {
-		return () => {
-			options[type] = !options[type];
-			GM.setValue('options', options);
-		};
+	function triggerConfig(type) {
+		options[type] = !options[type];
+		GM.setValue('options', options);
 	}
 
-	GM_registerMenuCommand(getMenuText('cover'), updateConfig('cover'), 'C');
-	GM_registerMenuCommand(getMenuText('autostart'), updateConfig('autostart'), 'A');
-	GM_registerMenuCommand(getMenuText('permalink'), updateConfig('permalink'), 'P');
-	GM_registerMenuCommand(getMenuText('heatmap'), updateConfig('heatmap'), 'H');
+	GM_registerMenuCommand(getMenuText('cover'), () => triggerConfig('cover'), 'C');
+	GM_registerMenuCommand(getMenuText('autostart'), () => triggerConfig('autostart'), 'A');
+	GM_registerMenuCommand(getMenuText('permalink'), () => triggerConfig('permalink'), 'P');
+	GM_registerMenuCommand(getMenuText('heatmap'), () => triggerConfig('heatmap'), 'H');
 
 	function getMenuText(type) {
 		return `${options[type] ? '✅ 已啟用' : '❎ 已停用'}：${optionsText[type]}`;
@@ -164,7 +162,7 @@
 				<div class="ani-set-flex-right">
 					<div class="ani-checkbox">
 						<label class="ani-checkbox__label">
-							<input type="checkbox" id="danmu-heatmap-ckbox" />
+							<input type="checkbox" id="danmu-heatmap-ckbox" checked=${options.heatmap} />
 							<div class="ani-checkbox__button"></div>
 						</label>
 					</div>
@@ -174,10 +172,11 @@
 
 		document.querySelector('#danmu-heatmap-ckbox').addEventListener('change', (e) => {
 			document.querySelector('.danmu-heatmap').hidden = !e.target.checked;
+			triggerConfig('heatmap');
 		});
 
 		// heatmap
-		let dots = '<div class="danmu-heatmap" hidden>' + danmu.byTime.map(i => {
+		let dots = `<div class="danmu-heatmap" ${options.heatmap ? '' : 'hidden'}>` + danmu.byTime.map(i => {
 			return `<i data-time="${i.time / 10}" style="--l: ${i.time / danmu.duration}" title="${i.text}"></i>`;
 		}).join('') + '</div>';
 		let dots_style = `<style>
