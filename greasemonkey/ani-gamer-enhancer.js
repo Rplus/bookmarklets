@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         巴哈姆特動畫瘋小幫手：封面圖 & 自動開始 & 留言連結 & 彈幕熱圖
 // @namespace    http://tampermonkey.net/
-// @version      1.3.3
+// @version      1.3.5
 // @description  幫巴哈姆特動畫瘋加上封面 & 自動播放 & 留言區的直連連結 & 彈幕熱圖
 // @author       Rplus
 // @match        https://ani.gamer.com.tw/animeVideo.php?sn=*
@@ -19,6 +19,7 @@
 			autostart: true,
 			permalink: true,
 			heatmap: true,
+			heatmapVisibility: true,
 		};
 		GM.setValue('options', options);
 	};
@@ -162,7 +163,7 @@
 				<div class="ani-set-flex-right">
 					<div class="ani-checkbox">
 						<label class="ani-checkbox__label">
-							<input type="checkbox" id="danmu-heatmap-ckbox" checked=${options.heatmap} />
+							<input type="checkbox" id="danmu-heatmap-ckbox" ${options.heatmapVisibility ? 'checked' : ''} />
 							<div class="ani-checkbox__button"></div>
 						</label>
 					</div>
@@ -172,10 +173,11 @@
 
 		document.querySelector('#danmu-heatmap-ckbox').addEventListener('change', (e) => {
 			document.querySelector('.danmu-heatmap').hidden = !e.target.checked;
+			triggerConfig('heatmapVisibility');
 		});
 
 		// heatmap
-		let dots = `<div class="danmu-heatmap" ${options.heatmap ? '' : 'hidden'}>` + danmu.byTime.map(i => {
+		let dots = `<div class="danmu-heatmap" ${options.heatmapVisibility ? '' : 'hidden'}>` + danmu.byTime.map(i => {
 			return `<i data-time="${i.time / 10}" style="--l: ${i.time / danmu.duration}" title="${i.text}"></i>`;
 		}).join('') + '</div>';
 		let dots_style = `<style>
