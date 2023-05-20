@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         巴哈姆特動畫瘋小幫手：封面圖 & 自動開始 & 留言連結 & 彈幕熱圖
 // @namespace    http://tampermonkey.net/
-// @version      1.3.2
+// @version      1.3.3
 // @description  幫巴哈姆特動畫瘋加上封面 & 自動播放 & 留言區的直連連結 & 彈幕熱圖
 // @author       Rplus
 // @match        https://ani.gamer.com.tw/animeVideo.php?sn=*
@@ -172,7 +172,6 @@
 
 		document.querySelector('#danmu-heatmap-ckbox').addEventListener('change', (e) => {
 			document.querySelector('.danmu-heatmap').hidden = !e.target.checked;
-			triggerConfig('heatmap');
 		});
 
 		// heatmap
