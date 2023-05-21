@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Monster debuff checker for Orna.RPG
 // @namespace    http://tampermonkey.net/
-// @version      1.2.0
+// @version      1.3.0
 // @description  Let you check monster's debuff in official Orna Codex page.
 // @author       RplusTW
 // @match        https://playorna.com/codex/raids/*/*
@@ -14,6 +14,9 @@
 // @grant        GM_registerMenuCommand
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        GM_xmlhttpRequest
+// @connect      playorna.com
+// @connect      orna.guide
 // @run-at       document-end
 // @license MIT
 // ==/UserScript==
@@ -34,6 +37,23 @@ window.addEventListener('load', function() {
 		document.querySelector('.codex-page-icon')?.addEventListener('dblclick', init, { once: true, });
 	}
 }, false);
+
+
+async function GET(url) {
+	return new Promise((resolve, reject) => {
+		GM_xmlhttpRequest({
+			method: 'GET',
+			url: url,
+			anonymous: true,
+			onload: (response) => {
+				resolve(response)
+			},
+			onerror: (response) => {
+				reject(response)
+			},
+		});
+	})
+}
 
 async function init() {
 	let style = document.createElement('style');
@@ -235,7 +255,13 @@ async function parseSkillEffect(skills) {
 }
 
 async function getUrlSource(url) {
-	return fetch(url).then(res => res.text());
+	return GET(url).then(res => res.responseText)
+	// return fetch(url).then(res => {
+	// 	if (res.ok) {
+	// 		return res.text();
+	// 	}
+	// 	window.open(res.url);
+	// });
 }
 
 function parseHtml(html, selectoor = '') {
@@ -270,9 +296,10 @@ function getURL(url = location.href, lang) {
 		let a = document.createElement('a');
 		a.href = url;
 		a.search = `lang=en`;
+		// return `https://cors-anywhere.herokuapp.com/${a.href}`;
 		// a.href = 'https://api.codetabs.com/v1/proxy?quest=' + a.href;
-		// return a.href;
-		return `https://api.allorigins.win/raw?url=${encodeURIComponent(a.href)}`;
+		return a.href;
+		// return `https://api.allorigins.win/raw?url=${encodeURIComponent(a.href)}`;
 	}
 	return url;
 }
