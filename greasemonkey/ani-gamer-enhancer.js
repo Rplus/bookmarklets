@@ -9,6 +9,7 @@
 // @grant        GM_registerMenuCommand
 // @grant        GM.setValue
 // @grant        GM.getValue
+// @run-at       document-end
 // ==/UserScript==
 
 (async function() {
