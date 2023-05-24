@@ -202,7 +202,11 @@
 			}
 			.danmu-heatmap i:hover {
 				opacity: .8;
+				z-index: 2;
 				background: #ff0;
+			}
+			.reply_time a {
+				color: unset;
 			}
 		</style>`;
 		let videoframe = document.querySelector('.videoframe');
