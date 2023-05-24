@@ -52,7 +52,7 @@
 		if (options.cover) {
 			// insert poster
 			document.querySelector('h1')?.insertAdjacentHTML('afterbegin', `
-				<a href="${unsafeWindow.animefun.poster}">
+				<a href="${unsafeWindow.animefun.poster}" target="_blank">
 					<img src="${unsafeWindow.animefun.poster}" style="float: left; height: 2em; margin-top: 4px; margin-right: 8px;" />
 				</a>`);
 
