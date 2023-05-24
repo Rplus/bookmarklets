@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         巴哈姆特動畫瘋小幫手：封面圖 & 自動開始 & 留言連結 & 彈幕熱圖
 // @namespace    http://tampermonkey.net/
-// @version      1.4
+// @version      1.5
 // @description  幫巴哈姆特動畫瘋加上封面 & 自動播放 & 留言區的直連連結 & 彈幕熱圖
 // @author       Rplus
 // @match        https://ani.gamer.com.tw/animeVideo.php?sn=*
@@ -133,31 +133,50 @@
 	}
 
 	function danmuHelper() {
-		jQuery.ajax({
-			url: '/ajax/danmuGet.php',
-			data: {
-				sn: animefun.videoSn
-			},
-			method: 'POST',
-			dataType: 'json',
-		})
-		.then(data => {
-			let danmu = {};
-			danmu.length = data.length;
-			danmu.duration = data[danmu.length - 1].time;
-			danmu.byTime = data;
-			// danmu.byUser = data.reduce((all, i) => {
-			// 	let uid = i.userid;
-			// 	if (!all[uid]) { all[uid] = []; }
-			// 	all[uid].push(i);
-			// 	return all;
-			// }, {});
+		let _danmu = unsafeWindow.animefun?.danmu;
+		if (_danmu && _danmu.length) {
+			danmuAnal(_danmu);
+		} else {
+			jQuery.ajax({
+				url: '/ajax/danmuGet.php',
+				data: { sn: unsafeWindow.animefun.videoSn, },
+				method: 'POST',
+				dataType: 'json',
+			})
+			.then(danmuAnal);
+		}
+	}
 
-			danmuAnal(danmu);
-		})
+	function updateVideoDuration(e) {
+		let key = '';
+		let target = document.querySelector('.danmu-heatmap');
+		let new_v = document.getElementById('ani_video_html5_api')?.duration;
+		let old_v = parseFloat(getComputedStyle(target).getPropertyValue('--video-duration'));
+
+		if (new_v && old_v && new_v > old_v) {
+			console.log('video-source-duration', {new_v, old_v});
+			target.style.setProperty('--video-source-duration', new_v);
+		}
+	}
+	let timer = 0;
+	function obVideo() {
+		if (!document.getElementById('ani_video_html5_api') && timer < 20) {
+			setTimeout(obVideo, 1000);
+		} else {
+			document.getElementById('ani_video_html5_api').addEventListener('durationchange', updateVideoDuration);
+		}
 	}
 
 	function danmuAnal(danmu) {
+		// let byUser = danmu.reduce((all, i) => {
+		// 	let uid = i.userid;
+		// 	if (!all[uid]) { all[uid] = []; }
+		// 	all[uid].push(i);
+		// 	return all;
+		// }, {});
+		let danmu_duration = danmu[danmu.length - 1].time / 10;
+		obVideo();
+
 		document.querySelector('#ani-tab-content-2 .ani-setting-item').insertAdjacentHTML('afterend', `
 			<div class="ani-setting-item ani-flex">
 				<div class="ani-setting-label">彈幕熱圖</div>
@@ -178,11 +197,12 @@
 		});
 
 		// heatmap
-		let dots = `<div class="danmu-heatmap" ${options.heatmapVisibility ? '' : 'hidden'}>` + danmu.byTime.map(i => {
-			return `<i data-time="${i.time / 10}" style="--l: ${i.time / danmu.duration}" title="${i.text}"></i>`;
+		let dots = `<div class="danmu-heatmap" ${options.heatmapVisibility ? '' : 'hidden'}>` + danmu.map(i => {
+			return `<i data-time="${i.time / 10}" style="--danmu-time: ${i.time / 10}" title="${i.text}"></i>`;
 		}).join('') + '</div>';
 		let dots_style = `<style>
 			.danmu-heatmap {
+				--video-duration: var(--video-source-duration, ${danmu_duration});
 				position: absolute;
 				left: 0;
 				right: 0;
@@ -194,7 +214,8 @@
 			}
 			.danmu-heatmap i {
 				position: absolute;
-				left: calc(var(--l, 1) * 100%);
+				left: calc(var(--danmu-time, 1) / var(--video-duration) * 100%);
+				margin-left: -0.25em;
 				width: 0.5em;
 				height: 1em;
 				background: #fff;
