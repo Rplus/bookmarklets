@@ -156,6 +156,7 @@
 		if (new_v && old_v && new_v > old_v) {
 			console.log('video-source-duration', {new_v, old_v});
 			target.style.setProperty('--video-source-duration', new_v);
+			document.getElementById('ani_video_html5_api').removeEventListener('durationchange', updateVideoDuration);
 		}
 	}
 	let timer = 0;
