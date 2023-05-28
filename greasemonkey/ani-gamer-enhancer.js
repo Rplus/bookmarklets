@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         巴哈姆特動畫瘋小幫手：封面圖 & 自動開始 & 留言連結 & 彈幕熱圖
 // @namespace    http://tampermonkey.net/
-// @version      1.5.1
+// @version      1.5.2
 // @description  幫巴哈姆特動畫瘋加上封面 & 自動播放 & 留言區的直連連結 & 彈幕熱圖
 // @author       Rplus
 // @match        https://ani.gamer.com.tw/animeVideo.php?sn=*
@@ -153,7 +153,7 @@
 		let new_v = document.getElementById('ani_video_html5_api')?.duration;
 		let old_v = parseFloat(getComputedStyle(target).getPropertyValue('--video-duration'));
 
-		if (new_v && old_v && new_v > old_v) {
+		if (new_v && old_v && new_v > old_v && isFinite(new_v)) {
 			console.log('video-source-duration', {new_v, old_v});
 			target.style.setProperty('--video-source-duration', new_v);
 			document.getElementById('ani_video_html5_api').removeEventListener('durationchange', updateVideoDuration);
