@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         巴哈姆特哈啦區：嵌入 Twitter 貼文
 // @namespace    http://tampermonkey.net/
-// @version      1.0.1
+// @version      1.0.2
 // @description  embed Twitter post at forum.gamer.com
 // @author       Rplus
-// @match        https://m.gamer.com.tw/forum/*.php?*
-// @match        https://forum.gamer.com.tw/*.php?*
+// @match        https://m.gamer.com.tw/forum/C*.php?*
+// @match        https://forum.gamer.com.tw/C*.php?*
 // @license      WTFPL
 // @grant        GM_registerMenuCommand
 // @grant        GM.setValue
