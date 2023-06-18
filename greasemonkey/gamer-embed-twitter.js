@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         巴哈姆特哈啦區：嵌入 Twitter 貼文
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.0.1
 // @description  embed Twitter post at forum.gamer.com
 // @author       Rplus
 // @match        https://m.gamer.com.tw/forum/*.php?*
@@ -70,7 +70,6 @@
 		data-theme="${config.theme}"
 		data-dnt="${config.dnt}"
 		data-align="${config.align}"
-		data-lang="${config.lang}"
 		data-lang="${config.lang}"
 		${config.no_conversation ? 'data-conversation="none"' : ''}
 		${config.hide_media ? 'data-cards="hidden"' : ''}
