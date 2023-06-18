@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         巴哈姆特哈啦區：嵌入 Twitter 貼文
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      1.0
 // @description  embed Twitter post at forum.gamer.com
 // @author       Rplus
 // @match        https://m.gamer.com.tw/forum/*.php?*
@@ -16,9 +16,65 @@
 // TEST
 // https://m.gamer.com.tw/forum/C.php?bsn=60111&snA=123760
 
-(function() {
+(async function() {
 	'use strict';
-	// twitter embed
+
+	const ori_config = {
+		theme: 'light', // light, dark
+		dnt: true, // ads
+		align: 'center', // left, right, center
+		// width: null, // 250 ~ 550
+		lang: 'zh-tw', // https://developer.twitter.com/en/docs/twitter-for-websites/supported-languages
+		no_conversation: true, // conversation: none
+		hide_media: false, // (media) cards: hidden
+	};
+
+	let config = await GM.getValue('config');
+	if (!config) {
+		config = ori_config;
+		// GM.setValue('config', config);
+	};
+
+	GM_registerMenuCommand('選項', loadGui, 'O');
+	GM_registerMenuCommand('重設', resetConfig, 'R');
+
+	function resetConfig() {
+		GM.setValue('config', ori_config);
+	}
+	function loadGui() {
+		(function(doc, id) {
+			if (doc.getElementById(id)) return;
+			let fjs = doc.getElementsByTagName('script')[0];
+			let js = doc.createElement('script');
+			js.id = id;
+			js.src = 'https://cdn.jsdelivr.net/npm/lil-gui@0.18';
+			fjs.parentNode.insertBefore(js, fjs);
+			js.onload = adjConfig;
+		}(document, 'dat-lil'))
+	}
+	function adjConfig(argument) {
+		let GUI = lil.GUI;
+		const gui = new GUI({ width: 120 });
+		gui.add( config, 'theme', ['light', 'dark']).name('色系');
+		gui.add( config, 'lang').name('語系');
+		gui.add( config, 'align', ['left', 'right', 'center']).name('對齊');
+		gui.add( config, 'hide_media').name('純文字');
+		gui.add( config, 'no_conversation').name('無上下文');
+		gui.add( config, 'dnt').name('停止追蹤');
+		gui.onChange(e => {
+			GM.setValue('config', e.object);
+		});
+	}
+
+	let attrs = `
+		data-theme="${config.theme}"
+		data-dnt="${config.dnt}"
+		data-align="${config.align}"
+		data-lang="${config.lang}"
+		data-lang="${config.lang}"
+		${config.no_conversation ? 'data-conversation="none"' : ''}
+		${config.hide_media ? 'data-cards="hidden"' : ''}
+	`.trim();
 
 	let links = document.querySelectorAll('.cbox_txt a, .c-post__body a');
 	let has_twitter_link = false;
@@ -32,16 +88,9 @@
 		has_twitter_link = true;
 		let twitter_id = url.match(regex)[1];
 
-		// theme: light, dark
-		// conversation: none
-		// align: left, right, center
-		// width: 250 ~ 550
-		// lang: https://developer.twitter.com/en/docs/twitter-for-websites/supported-languages
-		// dnt: ads
-		// cards: (media) hidden
 
 		a.outerHTML = `<details open><summary>${a.outerHTML}</summary>
-			<blockquote class="twitter-tweet" data-conversation="yes" data-align="center" data-dnt="true" data-lang="zh-tw"><a href="https://twitter.com/i/status/${twitter_id}"></a></blockquote>
+			<blockquote class="twitter-tweet" ${attrs}><a href="https://twitter.com/i/status/${twitter_id}"></a></blockquote>
 		</details>`
 	});
 
