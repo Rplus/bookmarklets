@@ -13,9 +13,6 @@
 // @run-at       document-end
 // ==/UserScript==
 
-// TEST
-// https://m.gamer.com.tw/forum/C.php?bsn=60111&snA=123760
-
 (async function() {
 	'use strict';
 
