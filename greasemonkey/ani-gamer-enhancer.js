@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         巴哈姆特動畫瘋小幫手：封面圖 & 自動開始 & 留言連結 & 彈幕熱圖
 // @namespace    http://tampermonkey.net/
-// @version      1.5.2
+// @version      1.7.0
 // @description  幫巴哈姆特動畫瘋加上封面 & 自動播放 & 留言區的直連連結 & 彈幕熱圖
 // @author       Rplus
 // @match        https://ani.gamer.com.tw/animeVideo.php?sn=*
@@ -41,27 +41,31 @@
 	GM_registerMenuCommand(getMenuText('autostart'), () => triggerConfig('autostart'), 'A');
 	GM_registerMenuCommand(getMenuText('permalink'), () => triggerConfig('permalink'), 'P');
 	GM_registerMenuCommand(getMenuText('heatmap'), () => triggerConfig('heatmap'), 'H');
+	GM_registerMenuCommand('init', () => init(), 'I');
 
 	function getMenuText(type) {
 		return `${options[type] ? '✅ 已啟用' : '❎ 已停用'}：${optionsText[type]}`;
 	}
 
-	window.addEventListener('load', init);
+	unsafeWindow.addEventListener('load', init);
+
+	unsafeWindow.navigation.addEventListener('navigate', () => {
+		setTimeout(init, 2000);
+	});
+
+	unsafeWindow.BahaWall.showUpload = (e) => {
+		e.closest('.reply-input')?.querySelector('input[type="file"]')?.click();
+	}
+	document.querySelector('#w-post-box').addEventListener('click', (e) => {
+		if (e.target.tagName !== 'INPUT' || e.target.type !== 'file') {
+			return;
+		}
+		e.target.accept = 'image/*';
+	})
 
 	function init() {
 		if (options.cover) {
-			// insert poster
-			document.querySelector('h1')?.insertAdjacentHTML('afterbegin', `
-				<a href="${unsafeWindow.animefun.poster}" target="_blank">
-					<img src="${unsafeWindow.animefun.poster}" style="float: left; height: 2em; margin-top: 4px; margin-right: 8px;" />
-				</a>`);
-
-			// insert published time
-			let timeTag = document.querySelector('.anime_info_detail p');
-			let time = timeTag?.textContent.split('：')?.[1];
-			if (time) {
-				timeTag.textContent += ` (${getRelatedDays(time)}天前)`;
-			}
+			initCover();
 		}
 
 		// latest duration
@@ -81,11 +85,36 @@
 				childList: true,
 				subtree: true,
 			});
+			unsafeWindow.navigation.addEventListener('navigate', () => {
+				ob.disconnect();
+			});
 		}
 
 		// danmu heatmap
 		if (options.heatmap) {
 			danmuHelper();
+		}
+	}
+
+	function initCover() {
+		console.log(111, 'initCover')
+		let cover = unsafeWindow.ani_video_html5_api?.poster || unsafeWindow.animefun.poster;
+		console.log('cover', cover);
+		let style = document.querySelector('.ss-style') || document.createElement('style');
+		style.className = 'ss-style';
+		style.innerText = `.R18.R18 {background:url(${cover}) 50% / cover no-repeat #000;}`;
+		document.head.append(style);
+		// insert poster
+		document.querySelector('h1')?.insertAdjacentHTML('afterbegin', `
+			<a href="${cover}" target="_blank">
+				<img src="${cover}" style="float: left; height: 2em; margin-top: 4px; margin-right: 8px;" />
+			</a>`);
+
+		// insert published time
+		let timeTag = document.querySelector('.anime_info_detail .uploadtime');
+		let time = timeTag?.textContent.split('：')?.[1];
+		if (time) {
+			timeTag.textContent += ` (${getRelatedDays(time)}天前)`;
 		}
 	}
 
@@ -123,6 +152,15 @@
 		});
 	}
 
+	function updateInputFile() {
+		let inputs = document.querySelectorAll('input[type="file"]');
+		if (inputs?.length) {
+			inputs.forEach(input => {
+				input.accept = 'image/*';
+			});
+		}
+	}
+
 	function checkCmtBoxBeMore(mutations) {
 		console.log('checkCmtBoxBeMore');
 		genCmtLinks();
@@ -133,17 +171,21 @@
 	}
 
 	function danmuHelper() {
+		console.log('danmuHelper')
 		let _danmu = unsafeWindow.animefun?.danmu;
+		let sn = new URLSearchParams(location.search)?.get('sn');
+
 		if (_danmu && _danmu.length) {
 			danmuAnal(_danmu);
 		} else {
-			jQuery.ajax({
-				url: '/ajax/danmuGet.php',
-				data: { sn: unsafeWindow.animefun.videoSn, },
-				method: 'POST',
-				dataType: 'json',
-			})
-			.then(danmuAnal);
+			fetch('https://ani.gamer.com.tw/ajax/danmuGet.php', {
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+				},
+				cache: 'force-cache',
+				body: `sn=${sn}`,
+				method: "POST",
+			}).then(r => r.json()).then(danmuAnal);
 		}
 	}
 
@@ -169,6 +211,7 @@
 	}
 
 	function danmuAnal(danmu) {
+		console.log('danmuAnal')
 		// let byUser = danmu.reduce((all, i) => {
 		// 	let uid = i.userid;
 		// 	if (!all[uid]) { all[uid] = []; }
@@ -178,30 +221,39 @@
 		let danmu_duration = danmu[danmu.length - 1].time / 10;
 		obVideo();
 
-		document.querySelector('#ani-tab-content-2 .ani-setting-item').insertAdjacentHTML('afterend', `
-			<div class="ani-setting-item ani-flex">
-				<div class="ani-setting-label">彈幕熱圖</div>
-				<div class="ani-set-flex-right">
-					<div class="ani-checkbox">
-						<label class="ani-checkbox__label">
-							<input type="checkbox" id="danmu-heatmap-ckbox" ${options.heatmapVisibility ? 'checked' : ''} />
-							<div class="ani-checkbox__button"></div>
-						</label>
+		let danmu_set_item = document.querySelector('.ani-setting-item.danmu');
+		if (!danmu_set_item) {
+			document.querySelector('#ani-tab-content-2 .ani-setting-item').insertAdjacentHTML('afterend', `
+				<div class="ani-setting-item ani-flex danmu">
+					<div class="ani-setting-label">彈幕熱圖</div>
+					<div class="ani-set-flex-right">
+						<div class="ani-checkbox">
+							<label class="ani-checkbox__label">
+								<input type="checkbox" id="danmu-heatmap-ckbox" ${options.heatmapVisibility ? 'checked' : ''} />
+								<div class="ani-checkbox__button"></div>
+							</label>
+						</div>
 					</div>
 				</div>
-			</div>
-		`);
+			`);
+		}
 
 		document.querySelector('#danmu-heatmap-ckbox').addEventListener('change', (e) => {
 			document.querySelector('.danmu-heatmap').hidden = !e.target.checked;
 			triggerConfig('heatmapVisibility');
 		});
 
+		let d1 = document.querySelector('.danmu-heatmap');
+		let s1 = document.querySelector('.danmu-heatmap-style');
+		console.log({d1})
+		if (d1) { d1.remove(); }
+		if (s1) { s1.remove(); }
+
 		// heatmap
 		let dots = `<div class="danmu-heatmap" ${options.heatmapVisibility ? '' : 'hidden'}>` + danmu.map(i => {
 			return `<i data-time="${i.time / 10}" style="--danmu-time: ${i.time / 10}" title="${i.text}"></i>`;
 		}).join('') + '</div>';
-		let dots_style = `<style>
+		let dots_style = `<style class="danmu-heatmap-style">
 			.danmu-heatmap {
 				--video-duration: var(--video-source-duration, ${danmu_duration});
 				position: absolute;
@@ -235,10 +287,16 @@
 		videoframe.style.position = 'relative';
 		videoframe.insertAdjacentHTML('beforeend', dots + dots_style);
 
-		videoframe.querySelector('.danmu-heatmap').addEventListener('click', (e) => {
-			if (e.target.tagName !== 'I') { return; }
-			jumpVideoTime(+e.target.dataset?.time);
-		})
+		videoframe.querySelector('.danmu-heatmap').addEventListener('click', danmuJump);
+
+		unsafeWindow.navigation.addEventListener('navigate', () => {
+			videoframe.querySelector('.danmu-heatmap').removeEventListener('click', danmuJump);
+		});
+	}
+
+	function danmuJump(e) {
+		if (e.target.tagName !== 'I') { return; }
+		jumpVideoTime(+e.target.dataset?.time);
 	}
 
 	function jumpVideoTime(time = 0) {
