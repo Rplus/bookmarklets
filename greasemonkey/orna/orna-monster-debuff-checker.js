@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Monster debuff checker for Orna.RPG
 // @namespace    http://tampermonkey.net/
-// @version      1.4.0
+// @version      1.4.2
 // @description  Let you check monster's debuff in official Orna Codex page.
 // @author       RplusTW
 // @match        https://playorna.com/codex/raids/*/*
