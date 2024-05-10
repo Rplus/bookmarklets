@@ -301,7 +301,7 @@ function itemParse(html) {
 	return data;
 }
 
-function getURL(url = location.href, lang) {
+function getURL(url = location.href, lang = unsafeWindow.LANG_CODE) {
 	if (lang === 'en') {
 		let a = document.createElement('a');
 		a.href = url;
