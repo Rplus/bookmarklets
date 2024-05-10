@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Monster debuff checker for Orna.RPG
 // @namespace    http://tampermonkey.net/
-// @version      1.3.0
+// @version      1.4.0
 // @description  Let you check monster's debuff in official Orna Codex page.
 // @author       RplusTW
 // @match        https://playorna.com/codex/raids/*/*
@@ -40,6 +40,7 @@ window.addEventListener('load', function() {
 
 
 async function GET(url) {
+	// console.log('GET', {url});
 	return new Promise((resolve, reject) => {
 		GM_xmlhttpRequest({
 			method: 'GET',
@@ -107,6 +108,7 @@ function collapsePage() {
 function initEffects(effects) {
 	let box = document.querySelector('.codex-page');
 	let html = '';
+	// console.log(effects);
 	for (let prop in effects) {
 		// effects[prop] = slimEffects(effects[prop]);
 		html += genEffectHtml(prop, slimEffects(effects[prop]));
@@ -206,7 +208,7 @@ function genDetails(title, listHtml) {
 
 function slimEffects(effects) {
 	let eff = effects.reduce((all, e) => {
-		let o = e.match(/^(\D+)\s\((\d+)/);
+		let o = e.match(/^(\D+)\s\((\d+)/) || [,e, 100];
 		all[o[1]] = all[o[1]] || [];
 		all[o[1]].push(+o[2]);
 		return all;
@@ -241,6 +243,7 @@ async function parseSkillEffect(skills) {
 
 	let effects = skills.reduce((all, skill, index) => {
 		skill.effect = itemParse(sources[index]);
+		// console.log(skill.effect);
 		for (let prop in skill.effect) {
 			if (!all[prop]) {
 				all[prop] = [];
@@ -279,15 +282,22 @@ function itemParse(html) {
 			all[_prop] = all[_prop] || [];
 		} else if (div.tagName === 'DIV') {
 			let icon = div.querySelector('img')?.src;
-			all[all.currentProp].push({
-				icon: div.querySelector('img')?.src,
-				url: div.querySelector('a')?.href,
-				title: div.textContent.trim(),
-			});
+			if (!div.querySelector('a[href^="/codex/classes/"]')) { // sucks learning-by
+				all[all.currentProp].push({
+					icon: div.querySelector('img')?.src,
+					url: div.querySelector('a')?.href,
+					title: div.textContent.trim(),
+				});
+			}
 		}
 		return all;
 	}, {});
 	delete data.currentProp;
+	for (let i in data) {
+		if (!data[i]?.length) {
+			delete data[i];
+		}
+	}
 	return data;
 }
 
