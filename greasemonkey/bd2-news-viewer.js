@@ -47,10 +47,27 @@ h2 {
 	margin: 0;
 
 	& span {
-		font-weight: 100;
+		font-weight: 400;
 		font-size: smaller;
 		vertical-align: middle;
 		opacity: .5;
+	}
+}
+@media (max-width:500px) {
+	details summary {
+		text-indent: -1.1em;
+		padding-left: 1.5em;
+
+		&::marker {
+			font-size: smaller;
+		}
+	}
+	h2 span {
+		position: absolute;
+		top: -15px;
+		left: 1.5em;
+		font-size: 12px;
+		opacity: .3;
 	}
 }
 
@@ -59,11 +76,12 @@ h2 {
 	background-color: #fff9;
 	padding: 1em;
 
-	& [style*="font-size"] {
-		font-size: inherit !important;
-	}
+	& [style*="background-color"],
+	& [style*="font-size"],
 	& [style*="font-family"] {
+		font-size: inherit !important;
 		font-family: inherit !important;
+		background-color: unset !important;
 	}
 }
 
