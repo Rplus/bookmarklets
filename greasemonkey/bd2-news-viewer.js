@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.browndust2.com/robots.txt
 // @grant       none
-// @version     1.1.1
+// @version     1.2.0
 // @author      Rplus
 // @description custom news viewer for sucking browndust2.com
 // @license     WTFPL
