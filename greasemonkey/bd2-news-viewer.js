@@ -58,6 +58,13 @@ h2 {
 	white-space: pre-wrap;
 	background-color: #fff9;
 	padding: 1em;
+
+	& [style*="font-size"] {
+		font-size: inherit !important;
+	}
+	& [style*="font-family"] {
+		font-family: inherit !important;
+	}
 }
 
 .list {
