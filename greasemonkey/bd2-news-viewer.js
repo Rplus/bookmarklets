@@ -205,11 +205,11 @@ function render(id = 34) {
 	})
 
 	if (id) {
-		taget_id(id);
+		auto_show(id);
 	}
 }
 
-function taget_id(id) {
+function auto_show(id) {
 	let target = list.querySelector(`details[data-id="${id}"]`);
 	if (target) {
 		target.open = true;
