@@ -275,10 +275,10 @@ function query_kwd() {
 		list.dataset.query = '';
 	}
 
-	let selectors = matched_ids.map(i => `[data-id="${i}"]`).join();
+	let selectors = matched_ids.map(i => `details[data-id="${i}"]`).join();
 	filter_style.textContent = `
 		details {display:none;}
-		details:is(${selectors}) { display: block; }
+		${selectors} { display: block; }
 	`;
 	// console.timeEnd('query');
 }
