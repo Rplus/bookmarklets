@@ -53,7 +53,7 @@ h2 {
 		opacity: .5;
 	}
 }
-@media (max-width:500px) {
+@media (max-width:750px) {
 	details summary {
 		text-indent: -1.1em;
 		padding-left: 1.5em;
