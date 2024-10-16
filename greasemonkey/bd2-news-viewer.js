@@ -177,7 +177,7 @@ let id_arr = [];
 function render(id = 34) {
 	list.innerHTML = data.map(i => {
 		let info = i.attributes;
-		let ctx = info.NewContent || info.content;
+		// let ctx = info.NewContent || info.content;
 		let time = format_time(info.publishedAt);
 		return `
 			<details name="item" data-id="${i.id}" id="news-${i.id}">
@@ -220,7 +220,10 @@ function taget_id(id) {
 function show(target, id) {
 	let ctx = target.querySelector(':scope > article.ctx');
 	location.hash = `news-${id}`;
-	if (!(ctx?.dataset?.init === '1')) {
+	if (!ctx) {
+		return;
+	}
+	if (ctx.dataset?.init !== '1') {
 		ctx.dataset.init = '1';
 		let info = news_map.get(+id)?.attributes;
 		let ori_link = `<a href="https://www.browndust2.com/zh-tw/news/view?id=${id}" target="_bd2news" title="official link">#</a>`;
