@@ -197,11 +197,7 @@ function render(id = 34) {
 	}).join('');
 
 	list.querySelectorAll('details').forEach(d => {
-		d.addEventListener('toggle', (e) => {
-			if (e.target.open) {
-				show(e.target, e.target.dataset.id);
-			}
-		});
+		d.addEventListener('toggle', show);
 	})
 
 	if (id) {
@@ -213,27 +209,34 @@ function auto_show(id) {
 	let target = list.querySelector(`details[data-id="${id}"]`);
 	if (target) {
 		target.open = true;
-		show(target, id);
+		show({ target, });
 	}
 }
 
-function show(target, id) {
+function show({ target, }) {
+	if (!target.open) {
+		return;
+	}
+
+	let id = +target.dataset.id;
 	let ctx = target.querySelector(':scope > article.ctx');
 	location.hash = `news-${id}`;
 	if (!ctx) {
 		return;
 	}
+
 	if (ctx.dataset?.init !== '1') {
 		ctx.dataset.init = '1';
-		let info = news_map.get(+id)?.attributes;
+
+		let info = news_map.get(id)?.attributes;
 		let ori_link = `<a href="https://www.browndust2.com/zh-tw/news/view?id=${id}" target="_bd2news" title="official link">#</a>`;
 		if (!info) {
 			ctx.innerHTML = ori_link;
 			return;
 		}
+
 		let content = (info.content || info.NewContent);
 		content = content.replace(/\<img\s/g, '<img loading="lazy" ');
-
 		ctx.innerHTML = content + ori_link;
 	}
 }
