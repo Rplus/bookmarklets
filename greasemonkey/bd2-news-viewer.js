@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.browndust2.com/robots.txt
 // @grant       none
-// @version     1.1.0
+// @version     1.1.1
 // @author      Rplus
 // @description custom news viewer for sucking browndust2.com
 // @license     WTFPL
@@ -96,7 +96,7 @@ details {
 #filterform {
 	position: fixed;
 	top: 0;
-	right: 0;
+	left: 0;
 	transition: opacity .2s;
 	opacity: .1;
 
@@ -239,7 +239,7 @@ function debounce(func, wait, immediate) {
 	};
 }
 
-let data_url = test_data_url || 'https://www.browndust2.com/api/newsData_tw.json';
+let data_url = window.test_data_url || 'https://www.browndust2.com/api/newsData_tw.json';
 fetch(data_url)
 	.then(r => r.json())
 	.then(d => {
