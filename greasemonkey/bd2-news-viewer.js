@@ -40,6 +40,20 @@ img {
 	max-width: 100%;
 }
 
+h2 {
+	display: inline;
+	position: relative;
+	font-size: inherit;
+	margin: 0;
+
+	& span {
+		font-weight: 100;
+		font-size: smaller;
+		vertical-align: middle;
+		opacity: .5;
+	}
+}
+
 .ctx {
 	white-space: pre-wrap;
 	background-color: #fff9;
@@ -64,10 +78,14 @@ summary {
 		content: '';
 		position: absolute;
 		inset: 0;
-		background-color: #0001;
+		background-color: #fff1;
 		pointer-events: none;
 		opacity: 0;
 		transition: opacity .1s;
+	}
+
+	:target & {
+		box-shadow: inset 0 -.5em #0003;
 	}
 
 	&:hover::before {
@@ -137,20 +155,27 @@ function render(id = 34) {
 		let ctx = info.NewContent || info.content;
 		let time = format_time(info.publishedAt);
 		return `
-			<details name="item" data-id="${i.id}">
+			<details name="item" data-id="${i.id}" id="news-${i.id}">
 				<summary>
 					<img src="https://www.browndust2.com/img/newsDetail/tag-${info.tag}.png" width="36" height="36" alt="${info.tag}" title="#${info.tag}">
-					#${i.id} - <time datetime="${info.publishedAt}" title="${info.publishedAt}">${time}</time>
-					${info.subject}
+					<h2>
+						<span>
+							#${i.id} -
+							<time datetime="${info.publishedAt}" title="${info.publishedAt}">${time}</time>
+						</span>
+						${info.subject}
+					</h2>
 				</summary>
-				<div class="ctx"></div>
+				<article class="ctx"></article>
 			</details>
 		`;
 	}).join('');
 
 	list.querySelectorAll('details').forEach(d => {
 		d.addEventListener('toggle', (e) => {
-			show(e.target, e.target.dataset.id);
+			if (e.target.open) {
+				show(e.target, e.target.dataset.id);
+			}
 		});
 	})
 
@@ -161,12 +186,15 @@ function render(id = 34) {
 
 function taget_id(id) {
 	let target = list.querySelector(`details[data-id="${id}"]`);
-	target.open = true;
-	show(target, id);
+	if (target) {
+		target.open = true;
+		show(target, id);
+	}
 }
 
 function show(target, id) {
-	let ctx = target.querySelector(':scope > div.ctx');
+	let ctx = target.querySelector(':scope > article.ctx');
+	location.hash = `news-${id}`;
 	if (!(ctx?.dataset?.init === '1')) {
 		ctx.dataset.init = '1';
 		let info = news_map.get(+id)?.attributes;
@@ -175,10 +203,6 @@ function show(target, id) {
 		content = content.replace(/\<img\s/g, '<img loading="lazy" ');
 
 		ctx.innerHTML = content + ori_link;
-
-		setTimeout(() => {
-			target.scrollIntoView({ behavior: 'smooth', });
-		}, 350);
 	}
 }
 
