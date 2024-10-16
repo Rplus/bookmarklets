@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.browndust2.com/robots.txt
 // @grant       none
-// @version     1.0
+// @version     1.1.0
 // @author      Rplus
 // @description custom news viewer for sucking browndust2.com
 // @license     WTFPL
@@ -24,70 +24,104 @@ document.body.innerHTML = `
 <hr>
 <label class="showall-label">
 	<input type="checkbox" class="showall" >
-	show all
+	show all list
 </label>
 <style>
+*, *::before, *::after {
+	box-sizing: border-box;
+}
 body {
-  max-width: 1200px;
-  margin: 0 auto;
-  background-color: #e5cc9c;
+	max-width: 1200px;
+	margin: 0 auto;
+	background-color: #e5cc9c;
 }
-.ctx {
-  white-space: pre-wrap;
-  background-color: #fff9;
-  padding: 1em;
-}
-img {
-  max-width: 100%;
-}
-.list {
-  list-style: none;
-  margin: 0;
-  padding-left: 50px;
-}
-li {
-  margin-top: 1em;
-  margin-bottom: 1em;
-}
-summary {
-  position: sticky;
-  top: 0;
-  background-color: #dfb991;
-  padding: 1em;
-  cursor: pointer;
 
-  & img {
-    position: absolute;
-    top: 0;
-    right: 100%;
-    height: 50px;
-    width: 50px;
-  }
+img {
+	max-width: 100%;
 }
+
+.ctx {
+	white-space: pre-wrap;
+	background-color: #fff9;
+	padding: 1em;
+}
+
+.list {
+	list-style: none;
+	margin: 2em 0;
+	padding-left: 50px;
+}
+
+summary {
+	position: relative;
+	top: 0;
+	background-color: #dfb991;
+	padding: 1em 1em .75em;
+	min-height: 50px;
+	cursor: pointer;
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-color: #0001;
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity .1s;
+	}
+
+	&:hover::before {
+		opacity: 1;
+	}
+
+	& > img {
+		position: absolute;
+		top: 0;
+		right: 100%;
+		width: 50px;
+		height: 50px;
+	}
+}
+
 details {
-  margin-bottom: 1em;
-  &[open] summary {
-    background-color: #ffc;
-    background-color: #ceac71;
-    box-shadow: inset 0 -.5em #0003;
-  }
+	margin-block-start: 1em;
+
+	&[open] summary {
+		position: sticky;
+		background-color: #ceac71;
+		box-shadow: inset 0 -.5em #0003;
+	}
 }
 
 #filterform {
-  position: fixed;
-  top: 0;
-  right: 0;
+	position: fixed;
+	top: 0;
+	right: 0;
+	transition: opacity .2s;
+	opacity: .1;
+
+	&:hover,
+	&:focus-within {
+		opacity: .75;
+	}
 }
 
-body:not(:has(.showall:checked)) .list[data-query=""] details:nth-child(n + 20) {
-  display: none;
+body:not(:has(.showall:checked))
+	.list[data-query=""]
+		details:nth-child(n + 20) {
+	display: none;
 }
 
 .showall-label {
-  display: block;
-  margin: 0 auto;
-  width: fit-content;
-  padding: 1em;
+	position: sticky;
+	bottom: 0;
+	display: block;
+	width: fit-content;
+	margin: 0 1em 0 auto;
+	padding: .25em 1em .25em .5em;
+	background-color: #0002;
+	border-radius: 1em 1em 0 0;
+	cursor: pointer;
 }
 </style>
 `;
@@ -105,8 +139,8 @@ function render(id = 34) {
 		return `
 			<details name="item" data-id="${i.id}">
 				<summary>
-					<img src="https://www.browndust2.com/img/newsDetail/tag-${info.tag}.png" width="36" height="36">
-					#${i.id} - <time>${time}</time>
+					<img src="https://www.browndust2.com/img/newsDetail/tag-${info.tag}.png" width="36" height="36" alt="${info.tag}" title="#${info.tag}">
+					#${i.id} - <time datetime="${info.publishedAt}" title="${info.publishedAt}">${time}</time>
 					${info.subject}
 				</summary>
 				<div class="ctx"></div>
@@ -126,11 +160,9 @@ function render(id = 34) {
 }
 
 function taget_id(id) {
-	let target = list.querySelector(`details[data-id="${id}"]`)
-	let event = new CustomEvent('toggle');
+	let target = list.querySelector(`details[data-id="${id}"]`);
 	target.open = true;
-	target.dispatchEvent(event);
-	target.scrollIntoView();
+	show(target, id);
 }
 
 function show(target, id) {
@@ -139,7 +171,10 @@ function show(target, id) {
 		ctx.dataset.init = '1';
 		let info = news_map.get(+id)?.attributes;
 		let ori_link = `<a href="https://www.browndust2.com/zh-tw/news/view?id=${id}" target="_bd2news" title="official link">#</a>`;
-		ctx.innerHTML = (info?.content || info?.NewContent) + ori_link;
+		let content = (info?.content || info?.NewContent);
+		content = content.replace(/\<img\s/g, '<img loading="lazy" ');
+
+		ctx.innerHTML = content + ori_link;
 
 		setTimeout(() => {
 			target.scrollIntoView({ behavior: 'smooth', });
@@ -167,7 +202,7 @@ function query() {
 		return;
 	}
 
-	let op = query_arr.map((i, index) => {
+	let matched_ids = query_arr.map((i, index) => {
 		// if (!i.includes(value)) {
 		// if (i.indexOf(value) === -1) {
 		let regex = new RegExp(value, 'i');
@@ -178,13 +213,13 @@ function query() {
 	})
 	.filter(Boolean);
 
-	if (!op.length) {
+	if (!matched_ids.length) {
 		list.dataset.query = '';
 	} else {
 		list.dataset.query = value;
 	}
 
-	let selectors = op.map(i => `[data-id="${i}"]`).join();
+	let selectors = matched_ids.map(i => `[data-id="${i}"]`).join();
 	filter_style.textContent = `
 		details {display:none;}
 		details:is(${selectors}) { display: block; }
@@ -204,7 +239,8 @@ function debounce(func, wait, immediate) {
 	};
 }
 
-fetch('https://www.browndust2.com/api/newsData_tw.json')
+let data_url = test_data_url || 'https://www.browndust2.com/api/newsData_tw.json';
+fetch(data_url)
 	.then(r => r.json())
 	.then(d => {
 		data = d.data.reverse();
