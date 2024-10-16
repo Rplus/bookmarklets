@@ -217,19 +217,18 @@ function show(target, id) {
 	}
 }
 
-const time_format = {
-	weekday: 'narrow',
-	year: 'numeric',
-	month: '2-digit',
-	day: '2-digit',
-};
 function format_time(time) {
 	let _time = time ? new Date(time) : new Date();
-	return _time.toLocaleString('zh-TW', time_format);
+	return _time.toLocaleString('zh-TW', {
+		weekday: 'narrow',
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+	});
 }
 
 function query() {
-	let value = searchinput.value;
+	let value = searchinput.value.trim();
 	// console.log('query', value);
 	if (!value) {
 		filter_style.textContent = '';
