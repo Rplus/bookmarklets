@@ -251,7 +251,8 @@ function format_time(time) {
 	});
 }
 
-function query() {
+function query_kwd() {
+	// console.time('query');
 	let value = searchinput.value.trim();
 	// console.log('query', value);
 	if (!value) {
@@ -264,17 +265,14 @@ function query() {
 		// if (!i.includes(value)) {
 		// if (i.indexOf(value) === -1) {
 		let regex = new RegExp(value, 'i');
-		if (!regex.test(i)) {
-			return;
-		}
-		return id_arr[index];
+		return regex.test(i) ? id_arr[index] : null;
 	})
 	.filter(Boolean);
 
-	if (!matched_ids.length) {
-		list.dataset.query = '';
-	} else {
+	if (matched_ids.length) {
 		list.dataset.query = value;
+	} else {
+		list.dataset.query = '';
 	}
 
 	let selectors = matched_ids.map(i => `[data-id="${i}"]`).join();
@@ -282,6 +280,7 @@ function query() {
 		details {display:none;}
 		details:is(${selectors}) { display: block; }
 	`;
+	// console.timeEnd('query');
 }
 
 function debounce(func, wait, immediate) {
@@ -322,4 +321,4 @@ fetch(data_url)
 	});
 
 filterform.addEventListener('submit', e => e.preventDefault());
-searchinput.addEventListener('input', debounce(query, 300));
+searchinput.addEventListener('input', debounce(query_kwd, 300));
