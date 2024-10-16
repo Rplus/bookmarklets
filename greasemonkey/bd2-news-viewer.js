@@ -206,7 +206,11 @@ function show(target, id) {
 		ctx.dataset.init = '1';
 		let info = news_map.get(+id)?.attributes;
 		let ori_link = `<a href="https://www.browndust2.com/zh-tw/news/view?id=${id}" target="_bd2news" title="official link">#</a>`;
-		let content = (info?.content || info?.NewContent);
+		if (!info) {
+			ctx.innerHTML = ori_link;
+			return;
+		}
+		let content = (info.content || info.NewContent);
 		content = content.replace(/\<img\s/g, '<img loading="lazy" ');
 
 		ctx.innerHTML = content + ori_link;
