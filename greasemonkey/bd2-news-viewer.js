@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.browndust2.com/robots.txt
 // @grant       none
-// @version     1.4.1
+// @version     1.4.2
 // @author      Rplus
 // @description custom news viewer for sucking browndust2.com
 // @require     https://unpkg.com/localforage@1.10.0/dist/localforage.min.js#sha384-MTDrIlFOzEqpmOxY6UIA/1Zkh0a64UlmJ6R0UrZXqXCPx99siPGi8EmtQjIeCcTH
@@ -179,7 +179,7 @@ let news_map = new Map();
 let query_arr = [];
 let id_arr = [];
 
-function render(id = 34) {
+function render(id) {
 	list.innerHTML = data.map(i => {
 		let info = i.attributes;
 		// let ctx = info.NewContent || info.content;
@@ -220,30 +220,30 @@ function auto_show(id) {
 
 function show({ target, }) {
 	if (!target.open) {
+		target.scrollIntoView({behavior:'smooth', block: 'nearest'});
 		return;
 	}
 
 	let id = +target.dataset.id;
 	let ctx = target.querySelector(':scope > article.ctx');
+	target.scrollIntoView({behavior:'smooth', block: 'nearest'});
 	location.hash = `news-${id}`;
-	if (!ctx) {
+	if (!ctx || ctx.dataset?.init === '1') {
 		return;
 	}
 
-	if (ctx.dataset?.init !== '1') {
-		ctx.dataset.init = '1';
+	ctx.dataset.init = '1';
 
-		let info = news_map.get(id)?.attributes;
-		let ori_link = `<a href="https://www.browndust2.com/zh-tw/news/view?id=${id}" target="_bd2news" title="official link">#</a>`;
-		if (!info) {
-			ctx.innerHTML = ori_link;
-			return;
-		}
-
-		let content = (info.content || info.NewContent);
-		content = content.replace(/\<img\s/g, '<img loading="lazy" ');
-		ctx.innerHTML = content + ori_link;
+	let info = news_map.get(id)?.attributes;
+	let ori_link = `<a href="https://www.browndust2.com/zh-tw/news/view?id=${id}" target="_bd2news" title="official link">#</a>`;
+	if (!info) {
+		ctx.innerHTML = ori_link;
+		return;
 	}
+
+	let content = (info.content || info.NewContent);
+	content = content.replace(/\<img\s/g, '<img loading="lazy" ');
+	ctx.innerHTML = content + ori_link;
 }
 
 function format_time(time) {
@@ -355,7 +355,7 @@ async function init() {
 		query_arr.push(string);
 	});
 
-	let id = new URL(location.href)?.searchParams?.get('id') || data[data.length - 1].id || 34;
+	let id = new URL(location.href)?.searchParams?.get('id') || data[data.length - 1].id;
 	render(id);
 }
 
