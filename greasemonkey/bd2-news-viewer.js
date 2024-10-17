@@ -3,15 +3,17 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.browndust2.com/robots.txt
 // @grant       none
-// @version     1.3.0
+// @version     1.3.1
 // @author      Rplus
 // @description custom news viewer for sucking browndust2.com
+// @@run-at     document-end
 // @license     WTFPL
 // ==/UserScript==
 
-document.head.innerHTML = `
-<link rel="icon" type="image/png" sizes="16x16" href="/img/seo/favicon.png">
-`;
+document.head.insertAdjacentHTML(
+	'beforeend',
+	`<link rel="icon" type="image/png" sizes="16x16" href="/img/seo/favicon.png">`
+);
 
 document.body.innerHTML = `
 <form id="filterform">
@@ -253,7 +255,7 @@ function format_time(time) {
 
 function query_kwd() {
 	// console.time('query');
-	let value = searchinput.value.trim();
+	let value = searchinput.value?.trim()?.toLowerCase();
 	// console.log('query', value);
 	if (!value) {
 		filter_style.textContent = '';
@@ -262,9 +264,7 @@ function query_kwd() {
 	}
 
 	let matched_ids = query_arr.map((i, index) => {
-		// if (!i.includes(value)) {
-		// if (i.indexOf(value) === -1) {
-		let regex = new RegExp(value, 'i');
+		let regex = new RegExp(value);
 		return regex.test(i) ? id_arr[index] : null;
 	})
 	.filter(Boolean);
@@ -297,28 +297,40 @@ function debounce(func, wait, immediate) {
 }
 
 let data_url = window.test_data_url || 'https://www.browndust2.com/api/newsData_tw.json';
-fetch(data_url)
-	.then(r => r.json())
-	.then(d => {
-		data = d.data.reverse();
-		tags = [...new Set(data.map(i => {
-			let info = i.attributes;
-			news_map.set(i.id, i);
-			id_arr.push(i.id);
-			query_arr.push([
-				i.id,
-				info.content,
-				info.NewContent,
-				`#${info.tag}`,
-				info.subject,
-			].join());
-			return i.attributes.tag;
-		}))];
 
-		// console.log(data[900], tags);
-		let id = new URL(location.href)?.searchParams?.get('id') || data[data.length - 1].id || 34;
-		render(id);
+async function get_data() {
+	try {
+		let response = await fetch(data_url);
+		let json = await response.json();
+		return json.data.reverse();
+	} catch(e) {
+		throw new Error(e);
+	}
+}
+
+async function init() {
+	list.innerHTML = 'loading...';
+	data = await get_data();
+	data.forEach(i => {
+		let info = i.attributes;
+		let string = [
+			i.id,
+			info.content,
+			info.NewContent,
+			`#${info.tag}`,
+			info.subject,
+		].join().toLowerCase();
+
+		id_arr.push(i.id);
+		news_map.set(i.id, i);
+		query_arr.push(string);
 	});
+
+	let id = new URL(location.href)?.searchParams?.get('id') || data[data.length - 1].id || 34;
+	render(id);
+}
+
+init();
 
 filterform.addEventListener('submit', e => e.preventDefault());
 searchinput.addEventListener('input', debounce(query_kwd, 300));
