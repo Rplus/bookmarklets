@@ -3,9 +3,10 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.browndust2.com/robots.txt
 // @grant       none
-// @version     1.3.1
+// @version     1.4.0
 // @author      Rplus
 // @description custom news viewer for sucking browndust2.com
+// @require     https://unpkg.com/localforage@1.10.0/dist/localforage.min.js#sha384-MTDrIlFOzEqpmOxY6UIA/1Zkh0a64UlmJ6R0UrZXqXCPx99siPGi8EmtQjIeCcTH
 // @@run-at     document-end
 // @license     WTFPL
 // ==/UserScript==
@@ -24,6 +25,8 @@ document.body.innerHTML = `
 
 <div class="list" id="list" data-query=""></div>
 <hr>
+<input type="reset" value="Delete all cached data" id="delete_btn">
+
 <label class="showall-label">
 	<input type="checkbox" class="showall" >
 	show all list
@@ -300,17 +303,39 @@ let data_url = window.test_data_url || 'https://www.browndust2.com/api/newsData_
 
 async function get_data() {
 	try {
+		let is_newer = await check_newer_data();
+		console.log({is_newer});
+		if (!is_newer) {
+			return await localforage.getItem('data');
+		}
+
 		let response = await fetch(data_url);
+		if (!response.ok) {
+			throw new Error('fetch error', response);
+		}
 		let json = await response.json();
-		return json.data.reverse();
+		let _data = json.data.reverse();
+		localforage.setItem('etag', response.headers.get('etag'));
+		localforage.setItem('data', _data);
+		return _data;
 	} catch(e) {
 		throw new Error(e);
 	}
 }
 
+async function check_newer_data() {
+		// data_url = 'https://www.browndust2.com/api/newsData_tw.json';
+	let response = await fetch(data_url, { method: 'HEAD', });
+	let new_etag = response.headers.get('etag');
+
+	let old_etag = await localforage.getItem('etag') || '';
+	return old_etag !== new_etag;
+}
+
 async function init() {
 	list.innerHTML = 'loading...';
 	data = await get_data();
+	console.log({data});
 	data.forEach(i => {
 		let info = i.attributes;
 		let string = [
@@ -334,3 +359,7 @@ init();
 
 filterform.addEventListener('submit', e => e.preventDefault());
 searchinput.addEventListener('input', debounce(query_kwd, 300));
+delete_btn.addEventListener('click', () => {
+	localforage.clear();
+	location.reload();
+});
