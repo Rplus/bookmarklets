@@ -141,9 +141,9 @@ summary a {
 	text-decoration: none;
 	pointer-events: none;
 
-}
-details:not([open]) summary a:visited {
-	color: #633;
+	&:visited {
+		color: #633;
+	}
 }
 
 details {
