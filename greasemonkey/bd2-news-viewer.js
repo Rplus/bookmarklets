@@ -109,7 +109,6 @@ summary {
 	padding: .5em;
 	place-content: center;
 
-
 	&::before {
 		content: '';
 		position: absolute;
@@ -135,6 +134,16 @@ summary {
 		width: 50px;
 		height: 50px;
 	}
+}
+
+summary a {
+	color: inherit;
+	text-decoration: none;
+	pointer-events: none;
+
+}
+details:not([open]) summary a:visited {
+	color: #633;
 }
 
 details {
@@ -199,7 +208,7 @@ function render(id) {
 							#${i.id} -
 							<time datetime="${info.publishedAt}" title="${info.publishedAt}">${time}</time>
 						</span>
-						${info.subject}
+						<a href="./?id=${i.id}#news-${i.id}" tabindex="-1">${info.subject}</a>
 					</h2>
 				</summary>
 				<article class="ctx"></article>
@@ -209,7 +218,15 @@ function render(id) {
 
 	list.querySelectorAll('details').forEach(d => {
 		d.addEventListener('toggle', show);
-	})
+	});
+
+	list.addEventListener('click', (e) => {
+		if (e.target.tagName === 'A') {
+			e.preventDefault();
+			console.log(123, e.target, e.target.href);
+			history.pushState('', null, e.target.href);
+		}
+	});
 
 	if (id) {
 		auto_show(id);
@@ -232,15 +249,18 @@ function show({ target, }) {
 
 	let id = +target.dataset.id;
 	let ctx = target.querySelector(':scope > article.ctx');
-	target.scrollIntoView({behavior:'smooth', block: 'nearest'});
+	// target.scrollIntoView({behavior:'smooth', block: 'nearest'});
+	let info = news_map.get(id)?.attributes;
 	location.hash = `news-${id}`;
+	history.pushState(`news-${id}`, null, `./?id=${id}#news-${id}`);
+	document.title = `#${id} - ${info.subject}`
+
 	if (!ctx || ctx.dataset?.init === '1') {
 		return;
 	}
 
 	ctx.dataset.init = '1';
 
-	let info = news_map.get(id)?.attributes;
 	let ori_link = `<a href="https://www.browndust2.com/zh-tw/news/view?id=${id}" target="_bd2news" title="official link">#</a>`;
 	if (!info) {
 		ctx.innerHTML = ori_link;
