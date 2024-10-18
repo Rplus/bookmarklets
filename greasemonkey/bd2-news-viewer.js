@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.browndust2.com/robots.txt
 // @grant       none
-// @version     1.4.2
+// @version     1.4.3
 // @author      Rplus
 // @description custom news viewer for sucking browndust2.com
 // @require     https://unpkg.com/localforage@1.10.0/dist/localforage.min.js#sha384-MTDrIlFOzEqpmOxY6UIA/1Zkh0a64UlmJ6R0UrZXqXCPx99siPGi8EmtQjIeCcTH
@@ -39,6 +39,7 @@ body {
 	max-width: 1200px;
 	margin: 0 auto;
 	background-color: #e5cc9c;
+	color: #111;
 }
 
 img {
@@ -47,7 +48,6 @@ img {
 
 h2 {
 	display: inline;
-	position: relative;
 	font-size: inherit;
 	margin: 0;
 
@@ -61,18 +61,22 @@ h2 {
 @media (max-width:750px) {
 	details summary {
 		text-indent: -1.1em;
-		padding-left: 1.5em;
+		padding-left: 1.5rem;
+		padding: .8em .5em .5em 1.5em;
 
 		&::marker {
-			font-size: smaller;
+			_font-size: smaller;
 		}
+	}
+	h2 {
+		position: relative;
 	}
 	h2 span {
 		position: absolute;
-		top: -15px;
-		left: 1.5em;
-		font-size: 12px;
-		opacity: .3;
+		left: 1.2rem;
+		bottom: 100%;
+		font-size: 11px;
+		opacity: .4;
 	}
 }
 
@@ -100,9 +104,11 @@ summary {
 	position: relative;
 	top: 0;
 	background-color: #dfb991;
-	padding: 1em 1em .75em;
 	min-height: 50px;
 	cursor: pointer;
+	padding: .5em;
+	place-content: center;
+
 
 	&::before {
 		content: '';
