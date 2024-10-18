@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.browndust2.com/robots.txt
 // @grant       none
-// @version     1.4.4
+// @version     1.4.5
 // @author      Rplus
 // @description custom news viewer for sucking browndust2.com
 // @require     https://unpkg.com/localforage@1.10.0/dist/localforage.min.js#sha384-MTDrIlFOzEqpmOxY6UIA/1Zkh0a64UlmJ6R0UrZXqXCPx99siPGi8EmtQjIeCcTH
@@ -208,7 +208,7 @@ function render(id) {
 							#${i.id} -
 							<time datetime="${info.publishedAt}" title="${info.publishedAt}">${time}</time>
 						</span>
-						<a href="./?id=${i.id}#news-${i.id}" tabindex="-1">${info.subject}</a>
+						<a href="?id=${i.id}#news-${i.id}" tabindex="-1">${info.subject}</a>
 					</h2>
 				</summary>
 				<article class="ctx"></article>
@@ -252,7 +252,7 @@ function show({ target, }) {
 	// target.scrollIntoView({behavior:'smooth', block: 'nearest'});
 	let info = news_map.get(id)?.attributes;
 	location.hash = `news-${id}`;
-	history.pushState(`news-${id}`, null, `./?id=${id}#news-${id}`);
+	history.pushState(`news-${id}`, null, `?id=${id}#news-${id}`);
 	document.title = `#${id} - ${info.subject}`
 
 	if (!ctx || ctx.dataset?.init === '1') {
