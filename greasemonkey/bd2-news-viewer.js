@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.browndust2.com/robots.txt
 // @grant       none
-// @version     1.4.5
+// @version     1.4.6
 // @author      Rplus
 // @description custom news viewer for sucking browndust2.com
 // @require     https://unpkg.com/localforage@1.10.0/dist/localforage.min.js#sha384-MTDrIlFOzEqpmOxY6UIA/1Zkh0a64UlmJ6R0UrZXqXCPx99siPGi8EmtQjIeCcTH
@@ -353,11 +353,15 @@ async function get_data() {
 }
 
 async function check_newer_data() {
-		// data_url = 'https://www.browndust2.com/api/newsData_tw.json';
+	// // debug
+	// let data_url = 'https://www.browndust2.com/api/newsData_tw.json';
+	let old_etag = await localforage.getItem('etag') || '';
+	if (!old_etag) {
+		console.log({old_etag});
+		return true;
+	}
 	let response = await fetch(data_url, { method: 'HEAD', });
 	let new_etag = response.headers.get('etag');
-
-	let old_etag = await localforage.getItem('etag') || '';
 	console.log({new_etag, old_etag});
 	return old_etag !== new_etag;
 }
