@@ -312,6 +312,7 @@ function query_kwd() {
 	// console.timeEnd('query');
 }
 
+// https://github.com/you-dont-need/You-Dont-Need-Lodash-Underscore?tab=readme-ov-file#_debounce
 function debounce(func, wait, immediate) {
 	var timeout;
 	return function() {
