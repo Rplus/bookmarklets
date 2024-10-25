@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.browndust2.com/robots.txt
 // @grant       none
-// @version     1.4.9
+// @version     1.5.0
 // @author      Rplus
 // @description custom news viewer for sucking browndust2.com
 // @require     https://unpkg.com/localforage@1.10.0/dist/localforage.min.js#sha384-MTDrIlFOzEqpmOxY6UIA/1Zkh0a64UlmJ6R0UrZXqXCPx99siPGi8EmtQjIeCcTH
@@ -27,10 +27,13 @@ document.body.innerHTML = `
 <hr>
 <input type="reset" value="Delete all cached data" id="delete_btn">
 
+<select id="lang_select"></select>
+
 <label class="showall-label">
 	<input type="checkbox" class="showall" >
 	show all list
 </label>
+
 <style>
 *, *::before, *::after {
 	box-sizing: border-box;
@@ -164,8 +167,9 @@ details {
 	opacity: .1;
 
 	&:hover,
+	&:focus,
 	&:focus-within {
-		opacity: .75;
+		opacity: 1;
 	}
 }
 
@@ -193,6 +197,29 @@ let data = [];
 let news_map = new Map();
 let query_arr = [];
 let id_arr = [];
+const lang_map = {
+	'en-us': {
+		full: 'en-us',
+		fn: 'en',
+	},
+	'zh-tw': {
+		full: 'zh-tw',
+		fn: 'tw',
+	},
+	'zh-cn': {
+		full: 'zh-cn',
+		fn: 'cn',
+	},
+	'ja-jp': {
+		full: 'ja-jp',
+		fn: 'jp',
+	},
+	'ko-kr': {
+		full: 'ko-kr',
+		fn: 'kr',
+	},
+};
+let lang = get_lang();
 
 function render(id) {
 	list.innerHTML = data.map(i => {
@@ -221,7 +248,7 @@ function render(id) {
 	});
 
 	list.addEventListener('click', (e) => {
-		if (e.target.tagName === 'A') {
+		if (e.target.tagName === 'A' && (e.target.tabIndex === -1)) {
 			e.preventDefault();
 			console.log(123, e.target, e.target.href);
 			history.pushState('', null, e.target.href);
@@ -262,7 +289,7 @@ function show({ target, }) {
 	}
 	ctx.dataset.init = '1';
 
-	let ori_link = `<a href="https://www.browndust2.com/zh-tw/news/view?id=${id}" target="_bd2news" title="official link">#</a>`;
+	let ori_link = `<a href="https://www.browndust2.com/${lang.full}/news/view?id=${id}" target="_bd2news" title="official link">#</a>`;
 	if (!info) {
 		ctx.innerHTML = ori_link;
 		return;
@@ -327,14 +354,25 @@ function debounce(func, wait, immediate) {
 	};
 }
 
-let data_url = `https://www.browndust2.com/api/newsData_tw.json?${+new Date()}`;
+function get_lang() {
+	let matched_langs = [
+		new URL(location.href)?.searchParams?.get('lang') || '',
+		localStorage.getItem('lang') || '',
+		navigator.language.toLowerCase() || '',
+		...(navigator.languages?.map(s => s.toLowerCase()) || [])
+	]
+	.filter(i => lang_map[i]);
+	return lang_map[matched_langs[0]] || lang_map['zh-tw'];
+}
+
+let data_url = `https://www.browndust2.com/api/newsData_${lang.fn}.json?${+new Date()}`;
 if (window.test_data_url) {
 	data_url = window.test_data_url;
 }
 
 async function get_data() {
 	try {
-		let cached_etag = await localforage.getItem('etag') || '';
+		let cached_etag = await localforage.getItem(`etag-${lang.fn}`) || '';
 		let response = await fetch(data_url, {
 			method: 'GET',
 			cache: 'no-store',
@@ -348,15 +386,15 @@ async function get_data() {
 		console.log({cached_etag, new_etag});
 
 		if (response.status === 304) { // cached
-			return await localforage.getItem('data');
+			return await localforage.getItem(`data-${lang.fn}`);
 		} else if (!response.ok) {
 			throw new Error('fetch error', response);
 		}
 
 		let json = await response.json();
 		let _data = json.data.reverse();
-		localforage.setItem('etag', response.headers.get('etag'));
-		localforage.setItem('data', _data);
+		localforage.setItem(`etag-${lang.fn}`, new_etag);
+		localforage.setItem(`data-${lang.fn}`, _data);
 		return _data;
 	} catch(e) {
 		throw new Error(e);
@@ -364,6 +402,12 @@ async function get_data() {
 }
 
 async function init() {
+	let qs_lang = new URL(location.href)?.searchParams?.get('lang') || '';
+	if (qs_lang) {
+		localStorage.setItem('lang', qs_lang);
+	}
+	lang_select.innerHTML = Object.values(lang_map).map(i => `<option value="${i.full}" ${i.full === lang.full ? 'selected' : ''}>${i.full}</option>`).join('');
+
 	list.innerHTML = 'loading...';
 	data = await get_data();
 	console.log({data});
@@ -384,10 +428,16 @@ async function init() {
 
 	let id = new URL(location.href)?.searchParams?.get('id') || data[data.length - 1].id;
 	render(id);
+
 }
 
 init();
 
+lang_select.addEventListener('change', e => {
+	let url = new URL(location.href);
+	url.searchParams.set('lang', e.target.value)
+	location.search = url.search;
+});
 filterform.addEventListener('submit', e => e.preventDefault());
 searchinput.addEventListener('input', debounce(query_kwd, 300));
 delete_btn.addEventListener('click', () => {
