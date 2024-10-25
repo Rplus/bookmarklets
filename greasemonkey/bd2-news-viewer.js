@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.browndust2.com/robots.txt
 // @grant       none
-// @version     1.4.8
+// @version     1.4.9
 // @author      Rplus
 // @description custom news viewer for sucking browndust2.com
 // @require     https://unpkg.com/localforage@1.10.0/dist/localforage.min.js#sha384-MTDrIlFOzEqpmOxY6UIA/1Zkh0a64UlmJ6R0UrZXqXCPx99siPGi8EmtQjIeCcTH
@@ -250,9 +250,6 @@ function show({ target, }) {
 	let id = +target.dataset.id;
 	let ctx = target.querySelector(':scope > article.ctx');
 
-	if (!ctx || ctx.dataset?.init === '1' || !id) {
-		return;
-	}
 
 	// target.scrollIntoView({behavior:'smooth', block: 'nearest'});
 	let info = news_map.get(id)?.attributes;
@@ -260,6 +257,9 @@ function show({ target, }) {
 	history.pushState(`news-${id}`, null, `?id=${id}#news-${id}`);
 	document.title = `#${id} - ${info.subject}`;
 
+	if (!ctx || ctx.dataset?.init === '1' || !id) {
+		return;
+	}
 	ctx.dataset.init = '1';
 
 	let ori_link = `<a href="https://www.browndust2.com/zh-tw/news/view?id=${id}" target="_bd2news" title="official link">#</a>`;
