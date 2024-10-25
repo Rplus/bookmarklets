@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.browndust2.com/robots.txt
 // @grant       none
-// @version     1.4.7
+// @version     1.4.8
 // @author      Rplus
 // @description custom news viewer for sucking browndust2.com
 // @require     https://unpkg.com/localforage@1.10.0/dist/localforage.min.js#sha384-MTDrIlFOzEqpmOxY6UIA/1Zkh0a64UlmJ6R0UrZXqXCPx99siPGi8EmtQjIeCcTH
@@ -334,16 +334,25 @@ if (window.test_data_url) {
 
 async function get_data() {
 	try {
-		let is_newer = await check_newer_data();
-		console.log({is_newer});
-		if (!is_newer) {
-			return await localforage.getItem('data');
-		}
+		let cached_etag = await localforage.getItem('etag') || '';
+		let response = await fetch(data_url, {
+			method: 'GET',
+			cache: 'no-store',
+			headers: {
+				'If-None-Match': cached_etag,
+			}
+		});
+		let new_etag = response.headers.get('etag');
 
-		let response = await fetch(data_url);
-		if (!response.ok) {
+		console.log(response);
+		console.log({cached_etag, new_etag});
+
+		if (response.status === 304) { // cached
+			return await localforage.getItem('data');
+		} else if (!response.ok) {
 			throw new Error('fetch error', response);
 		}
+
 		let json = await response.json();
 		let _data = json.data.reverse();
 		localforage.setItem('etag', response.headers.get('etag'));
@@ -352,20 +361,6 @@ async function get_data() {
 	} catch(e) {
 		throw new Error(e);
 	}
-}
-
-async function check_newer_data() {
-	// // debug
-	// let data_url = 'https://www.browndust2.com/api/newsData_tw.json';
-	let old_etag = await localforage.getItem('etag') || '';
-	if (!old_etag) {
-		console.log({old_etag});
-		return true;
-	}
-	let response = await fetch(data_url, { method: 'HEAD', });
-	let new_etag = response.headers.get('etag');
-	console.log({new_etag, old_etag});
-	return old_etag !== new_etag;
 }
 
 async function init() {
