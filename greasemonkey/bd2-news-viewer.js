@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.browndust2.com/robots.txt
 // @grant       none
-// @version     1.4.6
+// @version     1.4.7
 // @author      Rplus
 // @description custom news viewer for sucking browndust2.com
 // @require     https://unpkg.com/localforage@1.10.0/dist/localforage.min.js#sha384-MTDrIlFOzEqpmOxY6UIA/1Zkh0a64UlmJ6R0UrZXqXCPx99siPGi8EmtQjIeCcTH
@@ -249,15 +249,16 @@ function show({ target, }) {
 
 	let id = +target.dataset.id;
 	let ctx = target.querySelector(':scope > article.ctx');
+
+	if (!ctx || ctx.dataset?.init === '1' || !id) {
+		return;
+	}
+
 	// target.scrollIntoView({behavior:'smooth', block: 'nearest'});
 	let info = news_map.get(id)?.attributes;
 	location.hash = `news-${id}`;
 	history.pushState(`news-${id}`, null, `?id=${id}#news-${id}`);
-	document.title = `#${id} - ${info.subject}`
-
-	if (!ctx || ctx.dataset?.init === '1') {
-		return;
-	}
+	document.title = `#${id} - ${info.subject}`;
 
 	ctx.dataset.init = '1';
 
