@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         巴哈姆特動畫瘋小幫手：封面圖 & 自動開始 & 留言連結 & 彈幕熱圖
 // @namespace    http://tampermonkey.net/
-// @version      1.7.0
+// @version      1.7.1
 // @description  幫巴哈姆特動畫瘋加上封面 & 自動播放 & 留言區的直連連結 & 彈幕熱圖
 // @author       Rplus
 // @match        https://ani.gamer.com.tw/animeVideo.php?sn=*
@@ -97,18 +97,20 @@
 	}
 
 	function initCover() {
-		console.log(111, 'initCover')
-		let cover = unsafeWindow.ani_video_html5_api?.poster || unsafeWindow.animefun.poster;
-		console.log('cover', cover);
-		let style = document.querySelector('.ss-style') || document.createElement('style');
-		style.className = 'ss-style';
-		style.innerText = `.R18.R18 {background:url(${cover}) 50% / cover no-repeat #000;}`;
-		document.head.append(style);
+		let cover = (unsafeWindow.ani_video_html5_api?.poster !== location.href && unsafeWindow.ani_video_html5_api?.poster) || unsafeWindow.animefun.poster;
 		// insert poster
-		document.querySelector('h1')?.insertAdjacentHTML('afterbegin', `
-			<a href="${cover}" target="_blank">
-				<img src="${cover}" style="float: left; height: 2em; margin-top: 4px; margin-right: 8px;" />
-			</a>`);
+		// document.querySelector('h1')?.insertAdjacentHTML('afterbegin', `
+		// 	<a href="${cover}" target="_blank">
+		// 		<img src="${cover}" style="float: left; height: 2em; margin-top: 4px; margin-right: 8px;" />
+		// 	</a>`);
+
+		let h1 = document.querySelector('h1');
+		if (h1) {
+			h1.innerHTML = `
+				<a href="${cover}" target="_blank">
+					<img src="${cover}" style="float: left; height: 2em; margin-top: 4px; margin-right: 8px;" />
+				</a>${h1.textContent}`;
+		}
 
 		// insert published time
 		let timeTag = document.querySelector('.anime_info_detail .uploadtime');
