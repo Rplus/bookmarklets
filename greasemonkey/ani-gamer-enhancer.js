@@ -227,8 +227,8 @@
 
 		let danmu_set_item = document.querySelector('.ani-setting-item.danmu');
 		if (!danmu_set_item) {
-			document.querySelector('#ani-tab-content-2 .ani-setting-item').insertAdjacentHTML('afterend', `
-				<div class="ani-setting-item ani-flex danmu">
+			document.querySelector('#ani-tab-content-2 .ani-setting-section:not(.is-seperate) .ani-setting-item')?.insertAdjacentHTML('afterend', `
+				<div class="ani-setting-item ani-flex ani-setting-item--danmu">
 					<div class="ani-setting-label">彈幕熱圖</div>
 					<div class="ani-set-flex-right">
 						<div class="ani-checkbox">
@@ -242,7 +242,7 @@
 			`);
 		}
 
-		document.querySelector('#danmu-heatmap-ckbox').addEventListener('change', (e) => {
+		document.querySelector('#danmu-heatmap-ckbox')?.addEventListener('change', (e) => {
 			document.querySelector('.danmu-heatmap').hidden = !e.target.checked;
 			triggerConfig('heatmapVisibility');
 		});
