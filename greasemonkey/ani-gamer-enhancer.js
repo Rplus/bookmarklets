@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         巴哈姆特動畫瘋小幫手：封面圖 & 自動開始 & 留言連結 & 彈幕熱圖
 // @namespace    http://tampermonkey.net/
-// @version      1.7.1
+// @version      1.7.3
 // @description  幫巴哈姆特動畫瘋加上封面 & 自動播放 & 留言區的直連連結 & 彈幕熱圖
 // @author       Rplus
 // @match        https://ani.gamer.com.tw/animeVideo.php?sn=*
@@ -124,13 +124,15 @@
 		return ((new Date() - new Date(time))/(1000*60*60*24)).toFixed();
 	}
 
-	function checkReady() {
+	function checkReady(counter = 0) {
 		setTimeout(() => {
 			console.log(111, unsafeWindow.adult);
 			if (unsafeWindow.AnimeRoute && unsafeWindow.adult && unsafeWindow.animefun) {
 				unsafeWindow.adult.click();
 			} else {
-				checkReady();
+				if (counter < 40) {
+					checkReady(counter + 1);
+				}
 			}
 		}, 1000)
 	}
