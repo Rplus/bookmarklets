@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         巴哈姆特動畫瘋小幫手：封面圖 & 自動開始 & 留言連結 & 彈幕熱圖
 // @namespace    http://tampermonkey.net/
-// @version      1.7.3
+// @version      1.7.5
 // @description  幫巴哈姆特動畫瘋加上封面 & 自動播放 & 留言區的直連連結 & 彈幕熱圖
 // @author       Rplus
 // @match        https://ani.gamer.com.tw/animeVideo.php?sn=*
@@ -78,22 +78,35 @@
 			}
 		}
 
-		// observer comments to add permalink
+		// right click to add permalink
 		if (options.permalink) {
-			let ob = new MutationObserver(checkCmtBoxBeMore);
-			ob.observe(document.getElementById('w-post-box'), {
-				childList: true,
-				subtree: true,
-			});
-			unsafeWindow.navigation.addEventListener('navigate', () => {
-				ob.disconnect();
-			});
+			document.querySelector('.webview_commendlist').addEventListener('contextmenu', right_click_comment_to_add_permalink);
 		}
 
 		// danmu heatmap
 		if (options.heatmap) {
 			danmuHelper();
 		}
+	}
+
+	function right_click_comment_to_add_permalink(e) {
+		let span = e.target;
+		if (span.className !== 'reply_time') { return; }
+		let a = span.parentElement.querySelector('a.reply_menu');
+		if (!a) { return; }
+		e.preventDefault();
+
+		let config = JSON.parse(a.dataset?.tippyMenuComment);
+		let qs = new URLSearchParams({
+			sn: new URLSearchParams(location.search).get('sn'),
+			pcid: config.pid || config.cid,
+		});
+		if (config.pid) {
+			qs.append('cid', config.cid);
+		}
+		let url = `https://ani.gamer.com.tw/animeVideo.php?` + qs.toString();
+		span.className += ' inited';
+		span.innerHTML = `<a href="${url}" target="_blank"># ${span.textContent}</a>`;
 	}
 
 	function initCover() {
@@ -135,43 +148,6 @@
 				}
 			}
 		}, 1000)
-	}
-
-	function genCmtLinks() {
-		[...document.querySelectorAll('span.reply_time')].forEach(node => {
-			let a = node.nextElementSibling;
-			if (node.querySelector('a') || !a) {
-				return;
-			}
-			let config = JSON.parse(a.dataset?.tippyMenuComment);
-			let qs = new URLSearchParams({
-				sn: new URLSearchParams(location.search).get('sn'),
-				pcid: config.pid || config.cid,
-			});
-			if (config.pid) {
-				qs.append('cid', config.cid);
-			}
-			let url = `https://ani.gamer.com.tw/animeVideo.php?` + qs.toString()
-			node.innerHTML = `<a href="${url}"># ${node.textContent}</a>`
-		});
-	}
-
-	function updateInputFile() {
-		let inputs = document.querySelectorAll('input[type="file"]');
-		if (inputs?.length) {
-			inputs.forEach(input => {
-				input.accept = 'image/*';
-			});
-		}
-	}
-
-	function checkCmtBoxBeMore(mutations) {
-		console.log('checkCmtBoxBeMore');
-		genCmtLinks();
-		// mutations.forEach((mutation) => {
-		// 	console.log('checkCmtBoxBeMore mutation');
-		// 	console.log(222, 'checkCmtBoxsBeMore', mutation.target.querySelectorAll('.c-reply__item').length);
-		// });
 	}
 
 	function danmuHelper() {
