@@ -3,10 +3,12 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.browndust2.com/robots.txt
 // @grant       none
-// @version     1.5.0
+// @version     1.6.0
 // @author      Rplus
 // @description custom news viewer for sucking browndust2.com
 // @require     https://unpkg.com/localforage@1.10.0/dist/localforage.min.js#sha384-MTDrIlFOzEqpmOxY6UIA/1Zkh0a64UlmJ6R0UrZXqXCPx99siPGi8EmtQjIeCcTH
+// @require     https://unpkg.com/marked@16.1.2/lib/marked.umd.js#sha256-XF49G0iwZLps3m+Jg99uZv4DSzMQYF1NxTXcT0XXjmU=
+// @require     https://unpkg.com/dompurify@1.0.8/dist/purify.min.js#sha256-ieH6dkfLSVNw06mXrOQ4f10V2fTFrxI1LFPapACVYoc=
 // @@run-at     document-end
 // @license     WTFPL
 // ==/UserScript==
@@ -295,9 +297,9 @@ function show({ target, }) {
 		return;
 	}
 
-	let content = (info.content || info.NewContent);
+	let content = (info.NewContent || info.content);
 	content = content.replace(/\<img\s/g, '<img loading="lazy" ');
-	ctx.innerHTML = content + ori_link;
+	ctx.innerHTML = DOMPurify.sanitize(marked.parse(content + ori_link));
 }
 
 function format_time(time) {
