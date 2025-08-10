@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.browndust2.com/robots.txt
 // @grant       none
-// @version     1.6.0
+// @version     1.6.1
 // @author      Rplus
 // @description custom news viewer for sucking browndust2.com
 // @require     https://unpkg.com/localforage@1.10.0/dist/localforage.min.js#sha384-MTDrIlFOzEqpmOxY6UIA/1Zkh0a64UlmJ6R0UrZXqXCPx99siPGi8EmtQjIeCcTH
@@ -86,9 +86,12 @@ h2 {
 }
 
 .ctx {
-	white-space: pre-wrap;
 	background-color: #fff9;
 	padding: 1em;
+
+	p {
+		white-space: pre-wrap;
+	}
 
 	& [style*="background-color"],
 	& [style*="font-size"],
