@@ -52,7 +52,10 @@
         ${new Date().toISOString()}
         <a href="${b64}" target="_blank">🔗</a>
       </summary>
-      <img src="${src}">
+      <figure>
+        <img src="${src}">
+        <figcaption></figcaption>
+      </figure>
     `;
     document.body.append(details);
   };
@@ -62,8 +65,8 @@
       const reader = new FileReader();
       // reader.onloadend = () => resolve(reader.result);
       reader.onloadend = () => {
-        console.log(111, reader);
-        console.log(222, reader.result);
+        // console.log(111, reader);
+        // console.log(222, reader.result);
         return resolve(reader.result);
       };
       reader.readAsDataURL(blob);
@@ -86,8 +89,14 @@
       ctx.drawImage(img, 0, 0);
       canvas.toBlob(blob => {
         const newImg = document.createElement('img');
+        const sizeKB = (blob.size / 1024).toFixed(2);
+        const figure = img.closest('figure');
+        const figcaption = figure.querySelector('figcaption');
+        figcaption.textContent = `${img.naturalWidth} x ${img.naturalHeight} ( ${sizeKB} KB )`;
+
         newImg.src = URL.createObjectURL(blob);
         newImg.alt = img.alt;
+
         img.replaceWith(newImg);
       }, 'image/webp');
     });
