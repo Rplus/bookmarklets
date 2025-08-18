@@ -22,7 +22,9 @@
   </style>
 </head>
 <body>
-  <h1 contenteditable>Paste Images!</h1>
+  <h1 contenteditable>Paste Images!
+    <button onclick="convertImagesToWebP()">Convert</button>
+  </h1>
 </body>
 <script>
   // https://web.dev/patterns/clipboard/paste-images/
@@ -66,6 +68,33 @@
       };
       reader.readAsDataURL(blob);
     });
+  }
+
+  function convertImagesToWebP() {
+    const images = document.querySelectorAll('img');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    if (!images.length) {
+      return;
+    }
+    images.forEach(img => {
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob(blob => {
+        const newImg = document.createElement('img');
+        newImg.src = URL.createObjectURL(blob);
+        newImg.alt = img.alt;
+        img.replaceWith(newImg);
+      }, 'image/webp');
+    });
+
+    canvas.width = 0;
+    canvas.height = 0;
+    canvas = null;
   }
 </script>
 </html>
