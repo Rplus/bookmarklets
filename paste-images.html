@@ -53,7 +53,7 @@
         <a href="${b64}" target="_blank">🔗</a>
       </summary>
       <figure>
-        <img src="${src}">
+        <img src="${src}" data-mime="${blob.type}">
         <figcaption></figcaption>
       </figure>
     `;
@@ -74,7 +74,7 @@
   }
 
   function convertImagesToWebP() {
-    const images = document.querySelectorAll('img');
+    const images = document.querySelectorAll('img[data-mime="image/png"]');
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
 
@@ -96,6 +96,7 @@
 
         newImg.src = URL.createObjectURL(blob);
         newImg.alt = img.alt;
+        newImg.dataset.mime = 'image/webp';
 
         img.replaceWith(newImg);
       }, 'image/webp');
