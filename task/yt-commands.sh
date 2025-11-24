@@ -19,9 +19,10 @@ fi
 while true; do
   echo "請選擇要對 $URL 執行的功能："
   echo "0) 修改 URL"
-  echo "1) 下載縮圖"
-  echo "2) 列出&下載[影音]"
+  echo "1) 列出&下載[影音]"
+  echo "2) 下載[影音]"
   echo "3) 列出&下載<字幕>"
+  echo "9) 下載縮圖"
   echo "000) 離開"
   read -p "輸入數字選項: " choice
 
@@ -34,11 +35,11 @@ while true; do
       fi
       ;;
 
-    1)
+    9)
       yt-dlp --write-thumbnail --no-mtime --skip-download --convert-thumbnails webp -P "$DOWNLOAD_DIR" "$URL"
       ;;
 
-    2)
+    1)
       yt-dlp -F "$URL"
       echo "請輸入要下載的影音代碼"
       read -p "影音代碼: " avcode
@@ -46,7 +47,17 @@ while true; do
         echo "錯誤：沒有輸入影音代碼，回上層選單。"
         continue
       fi
-      yt-dlp -P "$DOWNLOAD_DIR" "$URL" -f "$av"
+      yt-dlp --no-mtime -P "$DOWNLOAD_DIR" "$URL" -f "$avcode"
+      ;;
+
+    2)
+      echo "請輸入要下載的影音代碼"
+      read -p "影音代碼: " avcode
+      if [ -z "$avcode" ]; then
+        echo "錯誤：沒有輸入影音代碼，回上層選單。"
+        continue
+      fi
+      yt-dlp --no-mtime -P "$DOWNLOAD_DIR" "$URL" -f "$avcode"
       ;;
 
     3)
