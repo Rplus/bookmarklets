@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Emoji picker</title>
+	<script src="./emoji.js"></script>
+	<style>
+		body {
+			max-width: 1400px;
+			margin: 0 auto;
+			font-size: 2rem;
+		}
+		h2 {
+			font-size: 1rem;
+			border-bottom: 2px dashed #0003;
+		}
+		ul {
+			display: block;
+			margin: 0;
+			padding: 0;
+			margin-bottom: 1em;
+		}
+		li {
+			list-style: none;
+			display: inline-flex;
+			padding: 0.25em;
+			cursor: pointer;
+
+			& span {
+				transition: scale .05s;
+				transform-origin: 90% 50%;
+			}
+
+			&:hover span {
+				scale: 2;
+			}
+		}
+		.emoji {
+			position: relative;
+			align-items: flex-end;
+
+			& sub {
+				font-size: small;
+			}
+		}
+		#app:has(#hideTitle:checked) {
+			& li span {
+				transform-origin: 50%;
+			}
+			& sub {
+				position: absolute;
+				width: 0;
+				height: 0;
+				overflow: hidden;
+			}
+		}
+		.filter-box {
+			position: sticky;
+			z-index: 100;
+			top: 0;
+			display: flex;
+			gap: 2rem;
+			padding: .5em;
+			background-color: #ccc9;
+			backdrop-filter: blur(2px);
+
+			& input {
+				font-size: 1.5rem;
+
+				&[type="checkbox"] {
+					width: 1em;
+					height: 1em;
+					margin: 0;
+				}
+			}
+		}
+
+		label {
+			display: inline-flex;
+			align-items: center;
+			gap: .25em;
+		}
+
+	</style>
+</head>
+<body>
+	<div id="app">
+		<hr>
+		<div class="filter-box">
+			<input type="search" id="input">
+			<hr>
+			<label>
+				🔍︎ <input autofocus placeholder="Filter" type="search" name="" id="filter">
+			</label>
+			<label>
+				<input type="checkbox" checked title="hide title" id="hideTitle">
+				hide title
+			</label>
+			<style id="filterStyle"></style>
+		</div>
+		<hr>
+		<div id="emojilist"></div>
+	</div>
+	<script>
+		for (let emojiCate in emojiObj) {
+			let list = emojiObj[emojiCate].map(i => `<li class="emoji" title="${i.title}" data-title="${i.title.toLowerCase()}" data-emoji="${i.emoji}"><span>${i.emoji}</span><sub>${i.title}</sub></li>`).join(' ')
+			emojilist.innerHTML += `
+				<h2>${emojiCate}</h2>
+				<ul>${list}</ul>
+			`
+		}
+
+		emojilist.addEventListener('click', (e) => {
+			let eee = e.target.closest('li.emoji');
+			if (!eee) { return; }
+
+			let txt = eee.dataset.emoji;
+			navigator.clipboard.writeText(txt);
+			input.value += txt;
+		})
+
+		filter.addEventListener('input', () => {
+			if (!filter.value) {
+				filterStyle.textContent = '';
+				return;
+			}
+			filterStyle.textContent = `.emoji:not([data-title*="${filter.value?.toLowerCase()}"]) { display: none; }`;
+		})
+
+	</script>
+</body>
+</html>
