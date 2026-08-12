@@ -19,12 +19,28 @@
       outline: 1px solid #333;
       max-width: calc(100% - 2em);
     }
+    summary:not(:hover) {
+    	opacity: 0.3;
+    }
+    body:not(:has(#show_summary:checked)) {
+      & summary {
+        opacity: 0;
+        height: 0;
+      }
+      figure {
+        margin: 0;
+      }
+    }
   </style>
 </head>
 <body>
   <h1 contenteditable>Paste Images!
     <button onclick="convertImagesToWebP()">Convert</button>
   </h1>
+  <label>
+    <input type="checkbox" checked id="show_summary">
+    show summary
+  </label>
 </body>
 <script>
   // https://web.dev/patterns/clipboard/paste-images/
