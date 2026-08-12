@@ -47,7 +47,7 @@ while true; do
         echo "錯誤：沒有輸入影音代碼，回上層選單。"
         continue
       fi
-      yt-dlp --no-mtime -P "$DOWNLOAD_DIR" "$URL" -f "$avcode"
+      yt-dlp --no-mtime --embed-chapters -P "$DOWNLOAD_DIR" "$URL" -f "$avcode"
       ;;
 
     2)
@@ -57,7 +57,7 @@ while true; do
         echo "錯誤：沒有輸入影音代碼，回上層選單。"
         continue
       fi
-      yt-dlp --no-mtime -P "$DOWNLOAD_DIR" "$URL" -f "$avcode"
+      yt-dlp --no-mtime --embed-chapters -P "$DOWNLOAD_DIR" "$URL" -f "$avcode"
       ;;
 
     3)
